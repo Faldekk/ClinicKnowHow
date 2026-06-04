@@ -1,0 +1,87 @@
+﻿# =========================
+# Visual Studio / .NET
+# =========================
+.vs/
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+[Ll]og/
+
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# =========================
+# Rider / JetBrains
+# =========================
+.idea/
+
+# =========================
+# Local app settings / secrets
+# =========================
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+
+# =========================
+# Database files
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+*.bak
+*.dump
+
+# PostgreSQL local dumps / exports
+*.sql
+*.backup
+
+# =========================
+# CSV / Excel datasets
+# =========================
+*.csv
+*.xlsx
+*.xls
+
+# Allow small sample files if you want to commit examples
+!sample*.csv
+!*sample*.csv
+!README*.md
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+Logs/
+
+# =========================
+# NuGet
+# =========================
+*.nupkg
+packages/
+.nuget/
+
+# =========================
+# Test results / coverage
+# =========================
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
