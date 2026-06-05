@@ -32,7 +32,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _isBusy;
     private string _databaseStatusText = "Database status not loaded.";
     public ObservableCollection<InteractionHistoryItem> InteractionHistory { get; } = new();
-    public IRelayCommand ExportCurrentReportCommand { get; }
+    public AsyncRelayCommand ExportCurrentReportCommand { get; }
     public MainViewModel(
     IDrugLookupService drugLookupService,
     ISubstanceLookupService substanceLookupService,
@@ -61,7 +61,7 @@ public sealed class MainViewModel : ObservableObject
         LoadDatabaseStatusCommand = new AsyncRelayCommand(LoadDatabaseStatusAsync);
         LoadHistoryCommand = new AsyncRelayCommand(LoadHistoryAsync);
         LoadDataManagementCommand = new AsyncRelayCommand(LoadDataManagementAsync);
-        ExportCurrentReportCommand = new RelayCommand(ExportCurrentReport);
+        ExportCurrentReportCommand = new AsyncRelayCommand(ExportCurrentReportAsync);
         _auditLogService = auditLogService;
     }
     public string DatabaseStatusText
@@ -239,21 +239,27 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
+        var searchedDrugName = DrugNameInput.Trim();
+
         IsBusy = true;
         StatusMessage = "Searching local drug dictionary...";
 
         try
         {
-            await _auditLogService.WriteAsync("DrugSearched", new
-            {
-                DrugName = DrugNameInput,
-                Timestamp = DateTime.Now
-            });
-            var result = await _drugLookupService.FindDrugAsync(DrugNameInput);
+            var result = await _drugLookupService.FindDrugAsync(searchedDrugName);
 
             if (result is null)
             {
                 StatusMessage = "Drug not found in local dictionary. Add active substance manually.";
+
+                await _auditLogService.WriteAsync("DrugSearched", new
+                {
+                    DrugName = searchedDrugName,
+                    Found = false,
+                    DetectedSubstanceCount = 0,
+                    Timestamp = DateTime.Now
+                });
+
                 return;
             }
 
@@ -262,25 +268,40 @@ public sealed class MainViewModel : ObservableObject
                 DetectedSubstances.Add(substance);
             }
 
-
             StatusMessage = $"Found {result.ActiveSubstances.Count} active substance(s) for {result.DrugName}.";
 
             await _auditLogService.WriteAsync("DrugSearched", new
             {
-                DrugName = DrugNameInput,
+                DrugName = searchedDrugName,
+                Found = true,
+                ResultDrugName = result.DrugName,
+                DetectedSubstanceCount = result.ActiveSubstances.Count,
+                DetectedSubstances = result.ActiveSubstances.Select(x => new
+                {
+                    x.Name,
+                    x.DatabaseId,
+                    x.DDInterId,
+                    x.Source
+                }).ToList(),
                 Timestamp = DateTime.Now
             });
         }
         catch (Exception ex)
         {
             StatusMessage = $"Drug lookup failed: {ex.Message}";
+
+            await _auditLogService.WriteAsync("DrugSearchFailed", new
+            {
+                DrugName = searchedDrugName,
+                Error = ex.Message,
+                Timestamp = DateTime.Now
+            });
         }
         finally
         {
             IsBusy = false;
         }
     }
-
     private void AcceptDetectedSubstance()
     {
         if (SelectedDetectedSubstance is null)
@@ -368,7 +389,7 @@ public sealed class MainViewModel : ObservableObject
 
         return report.ToString();
     }
-    private void ExportCurrentReport()
+    private async Task ExportCurrentReportAsync()
     {
         if (AcceptedSubstances.Count == 0)
         {
@@ -384,27 +405,42 @@ public sealed class MainViewModel : ObservableObject
         };
 
         if (dialog.ShowDialog() != true)
+        {
             return;
+        }
 
         try
         {
             var report = BuildCurrentReport();
-
             File.WriteAllText(dialog.FileName, report);
 
             StatusMessage = $"Report exported: {dialog.FileName}";
+
+            await _auditLogService.WriteAsync("ReportExported", new
+            {
+                FilePath = dialog.FileName,
+                SubstanceCount = AcceptedSubstances.Count,
+                InteractionCount = InteractionResults.Count,
+                HighestSeverity = InteractionResults.Count == 0
+                    ? "None"
+                    : InteractionResults
+                        .OrderByDescending(x => GetSeverityScore(x.Severity))
+                        .First()
+                        .Severity,
+                Timestamp = DateTime.Now
+            });
         }
         catch (Exception ex)
         {
             StatusMessage = $"Report export failed: {ex.Message}";
+
+            await _auditLogService.WriteAsync("ReportExportFailed", new
+            {
+                FilePath = dialog.FileName,
+                Error = ex.Message,
+                Timestamp = DateTime.Now
+            });
         }
-        _ = _auditLogService.WriteAsync("ReportExported", new
-        {
-            FilePath = dialog.FileName,
-            SubstanceCount = AcceptedSubstances.Count,
-            InteractionCount = InteractionResults.Count,
-            Timestamp = DateTime.Now
-        });
     }
     private static int GetSeverityScore(string severity)
     {
@@ -559,12 +595,22 @@ public sealed class MainViewModel : ObservableObject
 
     private void AddAcceptedSubstance(ActiveSubstanceItem substance)
     {
-        var alreadyExists = AcceptedSubstances.Any(x =>
-            x.NormalizedName == substance.NormalizedName);
+        var alreadyExists = AcceptedSubstances.Any(x => x.NormalizedName == substance.NormalizedName);
 
         if (alreadyExists)
         {
-            StatusMessage = $"Accepted: {substance.Name}, DatabaseId: {substance.DatabaseId}, Source: {substance.Source}";
+            StatusMessage = $"Active substance already accepted: {substance.Name}.";
+
+            _ = _auditLogService.WriteAsync("SubstanceAcceptSkipped", new
+            {
+                substance.Name,
+                substance.DatabaseId,
+                substance.DDInterId,
+                substance.Source,
+                Reason = "Duplicate",
+                Timestamp = DateTime.Now
+            });
+
             return;
         }
 
