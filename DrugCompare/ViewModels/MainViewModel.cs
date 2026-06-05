@@ -24,6 +24,7 @@ public sealed class MainViewModel : ObservableObject
     private ActiveSubstanceItem? _selectedDetectedSubstance;
     private ActiveSubstanceItem? _selectedAcceptedSubstance;
     private InteractionResult? _selectedInteraction;
+    private readonly IAuditLogService _auditLogService;
     private string _resultSummaryMessage = "No interaction check performed yet.";
     private string _statusMessage = "Ready.";
     private string _emaImportSummary = "EMA import status not loaded.";
@@ -39,7 +40,8 @@ public sealed class MainViewModel : ObservableObject
     IDatabaseStatusService databaseStatusService,
     IInteractionHistoryService interactionHistoryService,
     IDataManagementService dataManagementService,
-    InteractionAnalysisService interactionAnalysisService)
+    InteractionAnalysisService interactionAnalysisService,
+    IAuditLogService auditLogService)
     {
         _drugLookupService = drugLookupService;
         _substanceLookupService = substanceLookupService;
@@ -60,6 +62,7 @@ public sealed class MainViewModel : ObservableObject
         LoadHistoryCommand = new AsyncRelayCommand(LoadHistoryAsync);
         LoadDataManagementCommand = new AsyncRelayCommand(LoadDataManagementAsync);
         ExportCurrentReportCommand = new RelayCommand(ExportCurrentReport);
+        _auditLogService = auditLogService;
     }
     public string DatabaseStatusText
     {
@@ -206,6 +209,14 @@ public sealed class MainViewModel : ObservableObject
                 $"Interactions: {status.SubstanceInteractionsCount:N0}";
 
             StatusMessage = "Database status loaded.";
+            await _auditLogService.WriteAsync("DatabaseStatsViewed", new
+            {
+                status.DrugsCount,
+                status.ActiveSubstancesCount,
+                status.DrugActiveSubstancesCount,
+                status.SubstanceInteractionsCount,
+                Timestamp = DateTime.Now
+            });
         }
         catch (Exception ex)
         {
@@ -216,6 +227,7 @@ public sealed class MainViewModel : ObservableObject
         {
             IsBusy = false;
         }
+      
     }
     private async Task FindDrugAsync()
     {
@@ -232,6 +244,11 @@ public sealed class MainViewModel : ObservableObject
 
         try
         {
+            await _auditLogService.WriteAsync("DrugSearched", new
+            {
+                DrugName = DrugNameInput,
+                Timestamp = DateTime.Now
+            });
             var result = await _drugLookupService.FindDrugAsync(DrugNameInput);
 
             if (result is null)
@@ -245,7 +262,14 @@ public sealed class MainViewModel : ObservableObject
                 DetectedSubstances.Add(substance);
             }
 
+
             StatusMessage = $"Found {result.ActiveSubstances.Count} active substance(s) for {result.DrugName}.";
+
+            await _auditLogService.WriteAsync("DrugSearched", new
+            {
+                DrugName = DrugNameInput,
+                Timestamp = DateTime.Now
+            });
         }
         catch (Exception ex)
         {
@@ -374,6 +398,13 @@ public sealed class MainViewModel : ObservableObject
         {
             StatusMessage = $"Report export failed: {ex.Message}";
         }
+        _ = _auditLogService.WriteAsync("ReportExported", new
+        {
+            FilePath = dialog.FileName,
+            SubstanceCount = AcceptedSubstances.Count,
+            InteractionCount = InteractionResults.Count,
+            Timestamp = DateTime.Now
+        });
     }
     private static int GetSeverityScore(string severity)
     {
@@ -486,6 +517,7 @@ public sealed class MainViewModel : ObservableObject
 
         try
         {
+
             var analysis = await _interactionAnalysisService.AnalyzeAsync(
                 AcceptedSubstances.ToList());
 
@@ -497,7 +529,21 @@ public sealed class MainViewModel : ObservableObject
             SelectedInteraction = InteractionResults.FirstOrDefault();
 
             ResultSummaryMessage = analysis.SummaryMessage;
+
             StatusMessage = analysis.SummaryMessage;
+
+            await _auditLogService.WriteAsync("InteractionChecked", new
+            {
+                AcceptedSubstances = AcceptedSubstances.Select(x => new
+                {
+                    x.Name,
+                    x.DatabaseId,
+                    x.DDInterId
+                }).ToList(),
+                InteractionCount = analysis.Interactions.Count,
+                analysis.HighestSeverity,
+                Timestamp = DateTime.Now
+            });
 
             await LoadHistoryAsync();
         }
@@ -523,6 +569,15 @@ public sealed class MainViewModel : ObservableObject
         }
 
         AcceptedSubstances.Add(substance);
+
+        _ = _auditLogService.WriteAsync("SubstanceAccepted", new
+        {
+            substance.Name,
+            substance.DatabaseId,
+            substance.DDInterId,
+            substance.Source,
+            Timestamp = DateTime.Now
+        });
 
         StatusMessage = $"Accepted: {substance.Name}, DatabaseId: {substance.DatabaseId}, Source: {substance.Source}";
     }

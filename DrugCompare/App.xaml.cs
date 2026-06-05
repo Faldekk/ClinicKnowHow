@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using DrugCompare.Services.Contracts;
 using System.Windows;
-using DrugCompare.Views;
+
 using DrugCompare.Services.Application;
 using DrugCompare.Repositories;
 using DrugCompare.Repositories.Contracts;
@@ -27,14 +27,18 @@ public partial class App : Application
 
         services.AddSingleton<IConfiguration>(configuration);
 
+       
         services.AddSingleton<IDrugRepository, PostgresDrugRepository>();
         services.AddSingleton<ISubstanceRepository, PostgresSubstanceRepository>();
         services.AddSingleton<IInteractionRepository, PostgresInteractionRepository>();
         services.AddSingleton<IInteractionHistoryRepository, PostgresInteractionHistoryRepository>();
         services.AddSingleton<IDatabaseStatusRepository, PostgresDatabaseStatusRepository>();
         services.AddSingleton<IDataManagementRepository, PostgresDataManagementRepository>();
+        services.AddSingleton<IAuditLogRepository, PostgresAuditLogRepository>();
 
         services.AddSingleton<PostgresDrugDataService>();
+
+        services.AddSingleton<IAuditLogService, AuditLogService>();
 
         services.AddSingleton<IDrugLookupService>(sp =>
             sp.GetRequiredService<PostgresDrugDataService>());
