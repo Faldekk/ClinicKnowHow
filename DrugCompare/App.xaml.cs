@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using DrugCompare.Services.Contracts;
 using System.Windows;
-
 using DrugCompare.Services.Application;
 using DrugCompare.Repositories;
 using DrugCompare.Repositories.Contracts;

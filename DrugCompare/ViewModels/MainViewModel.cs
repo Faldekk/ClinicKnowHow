@@ -33,6 +33,8 @@ public sealed class MainViewModel : ObservableObject
     private string _databaseStatusText = "Database status not loaded.";
     public ObservableCollection<InteractionHistoryItem> InteractionHistory { get; } = new();
     public AsyncRelayCommand ExportCurrentReportCommand { get; }
+    public ObservableCollection<AuditLogItem> AuditLogs { get; } = new();
+
     public MainViewModel(
     IDrugLookupService drugLookupService,
     ISubstanceLookupService substanceLookupService,
@@ -63,6 +65,7 @@ public sealed class MainViewModel : ObservableObject
         LoadDataManagementCommand = new AsyncRelayCommand(LoadDataManagementAsync);
         ExportCurrentReportCommand = new AsyncRelayCommand(ExportCurrentReportAsync);
         _auditLogService = auditLogService;
+        LoadAuditLogsCommand = new AsyncRelayCommand(LoadAuditLogsAsync);
     }
     public string DatabaseStatusText
     {
@@ -136,7 +139,7 @@ public sealed class MainViewModel : ObservableObject
     public IAsyncRelayCommand FindDrugCommand { get; }
 
     public IAsyncRelayCommand LoadHistoryCommand { get; }
-
+    public IAsyncRelayCommand LoadAuditLogsCommand { get; }
     public IRelayCommand AcceptDetectedSubstanceCommand { get; }
 
     public IRelayCommand AcceptAllDetectedSubstancesCommand { get; }
@@ -327,6 +330,39 @@ public sealed class MainViewModel : ObservableObject
         }
 
         StatusMessage = "Detected active substances accepted.";
+    }
+    private async Task LoadAuditLogsAsync()
+    {
+        IsBusy = true;
+        StatusMessage = "Loading audit logs...";
+
+        try
+        {
+            AuditLogs.Clear();
+
+            var logs = await _auditLogService.GetRecentAsync(100);
+
+            foreach (var log in logs)
+            {
+                AuditLogs.Add(log);
+            }
+
+            StatusMessage = $"Loaded {AuditLogs.Count} audit log entries.";
+
+            await _auditLogService.WriteAsync("AuditLogViewed", new
+            {
+                Count = AuditLogs.Count,
+                Timestamp = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Loading audit logs failed: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
     private string BuildCurrentReport()
     {
@@ -627,4 +663,5 @@ public sealed class MainViewModel : ObservableObject
 
         StatusMessage = $"Accepted: {substance.Name}, DatabaseId: {substance.DatabaseId}, Source: {substance.Source}";
     }
+    
 }

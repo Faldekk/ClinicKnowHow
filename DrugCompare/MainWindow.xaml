@@ -4,118 +4,55 @@
         xmlns:views="clr-namespace:DrugCompare.Views"
         Title="Drug Compare"
         Width="1400"
-        Height="820"
-        MinWidth="1150"
-        MinHeight="720"
-        Background="#F4F7FA">
+        Height="850"
+        MinWidth="1200"
+        MinHeight="700"
+        ResizeMode="CanResize"
+        WindowStartupLocation="Manual">
 
-    <Window.Resources>
-        <Style x:Key="PanelBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D6DEE8"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <Style TargetType="TabItem">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="16,8"/>
-        </Style>
-    </Window.Resources>
-
-    <Grid Margin="14">
+    <Grid Background="#F4F7FB">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" MinHeight="780" MaxHeight="800"/>
+            <RowDefinition Height="0*"/>
+            <RowDefinition Height="0*"/>
         </Grid.RowDefinitions>
 
-        <!-- HEADER -->
-        <Border Grid.Row="0"
-                Style="{StaticResource PanelBorderStyle}"
-                Padding="16"
-                Margin="0,0,0,12">
+        <!-- TOP BAR -->
+        <Grid Grid.Row="0" Margin="10,10,10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <TabControl Grid.Column="0"
+                        SelectedIndex="0"
+                        BorderThickness="0"
+                        Background="Transparent">
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Drug Compare"
-                               FontSize="26"
-                               FontWeight="Bold"/>
+                <TabItem Header="Interaction Check">
+                    <views:InteractionCheckView/>
+                </TabItem>
 
-                    <TextBlock Text="Local active substance interaction assistant"
-                               FontSize="13"
-                               Foreground="#607080"
-                               Margin="0,3,0,0"/>
+                <TabItem Header="History">
+                    <views:HistoryView/>
+                </TabItem>
 
-                    <TextBlock Text="Aplikacja sprawdza znane interakcje między substancjami aktywnymi w lokalnej bazie. Nie zastępuje decyzji lekarza ani farmaceuty."
-                               FontSize="12"
-                               Foreground="#8A5A00"
-                               TextWrapping="Wrap"
-                               Margin="0,10,0,0"/>
-                </StackPanel>
+                <TabItem Header="Database Status">
+                    <views:DatabaseStatusView/>
+                </TabItem>
 
-                <Border Grid.Column="1"
-                        Background="#E8F3FF"
-                        BorderBrush="#9CC7F2"
-                        BorderThickness="1"
-                        CornerRadius="10"
-                        Padding="12,6"
-                        VerticalAlignment="Top"
-                        Margin="16,0,0,0">
-                    <TextBlock Text="LOCAL MODE"
-                               FontSize="12"
-                               FontWeight="Bold"
-                               Foreground="#135A9E"/>
-                </Border>
-            </Grid>
-        </Border>
+                <TabItem Header="Data Management">
+                    <views:DataManagementView/>
+                </TabItem>
 
-        <!-- TABS -->
-        <TabControl Grid.Row="1">
-            <TabItem Header="Interaction Check">
-                <views:InteractionCheckView/>
-            </TabItem>
+                <TabItem Header="Audit Log">
+                    <views:AuditLogView/>
+                </TabItem>
 
-            <TabItem Header="History">
-                <views:HistoryView/>
-            </TabItem>
-
-            <TabItem Header="Database Status">
-                <views:DatabaseStatusView/>
-            </TabItem>
-
-            <TabItem Header="Data Management">
-                <views:DataManagementView/>
-            </TabItem>
-
-            <TabItem Header="Settings">
-                <views:SettingsView/>
-            </TabItem>
-        </TabControl>
-
-        <!-- STATUS BAR -->
-        <StatusBar Grid.Row="2"
-                   Margin="0,12,0,0"
-                   Height="28">
-            <StatusBarItem>
-                <TextBlock Text="{Binding StatusMessage}"
-                           FontSize="12"
-                           TextTrimming="CharacterEllipsis"/>
-            </StatusBarItem>
-
-            <Separator/>
-
-            <StatusBarItem>
-                <TextBlock Text="Processing: local only"
-                           FontSize="12"/>
-            </StatusBarItem>
-        </StatusBar>
+                <TabItem Header="Settings">
+                    <views:SettingsView/>
+                </TabItem>
+            </TabControl>
+         </Grid>
     </Grid>
 </Window>
