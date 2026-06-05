@@ -4,55 +4,49 @@
         xmlns:views="clr-namespace:DrugCompare.Views"
         Title="Drug Compare"
         Width="1400"
-        Height="850"
-        MinWidth="1200"
-        MinHeight="700"
+        Height="760"
+        MinWidth="1180"
+        MinHeight="640"
         ResizeMode="CanResize"
-        WindowStartupLocation="Manual">
+        WindowStartupLocation="CenterScreen">
 
     <Grid Background="#F4F7FB">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" MinHeight="780" MaxHeight="800"/>
-            <RowDefinition Height="0*"/>
-            <RowDefinition Height="0*"/>
-        </Grid.RowDefinitions>
+        <TabControl Margin="8"
+                    BorderThickness="0"
+                    Background="Transparent">
 
-        <!-- TOP BAR -->
-        <Grid Grid.Row="0" Margin="10,10,10,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="Padding" Value="14,7"/>
+                    <Setter Property="FontSize" Value="13"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </Style>
+            </TabControl.Resources>
 
-            <TabControl Grid.Column="0"
-                        SelectedIndex="0"
-                        BorderThickness="0"
-                        Background="Transparent">
+            <TabItem Header="Interaction Check">
+                <views:InteractionCheckView/>
+            </TabItem>
 
-                <TabItem Header="Interaction Check">
-                    <views:InteractionCheckView/>
-                </TabItem>
+            <TabItem Header="History">
+                <views:HistoryView/>
+            </TabItem>
 
-                <TabItem Header="History">
-                    <views:HistoryView/>
-                </TabItem>
+            <TabItem Header="Database Status">
+                <views:DatabaseStatusView/>
+            </TabItem>
 
-                <TabItem Header="Database Status">
-                    <views:DatabaseStatusView/>
-                </TabItem>
+            <TabItem Header="Data Management">
+                <views:DataManagementView/>
+            </TabItem>
 
-                <TabItem Header="Data Management">
-                    <views:DataManagementView/>
-                </TabItem>
+            <TabItem Header="Audit Log">
+                <views:AuditLogView/>
+            </TabItem>
 
-                <TabItem Header="Audit Log">
-                    <views:AuditLogView/>
-                </TabItem>
+            <TabItem Header="Settings">
+                <views:SettingsView/>
+            </TabItem>
 
-                <TabItem Header="Settings">
-                    <views:SettingsView/>
-                </TabItem>
-            </TabControl>
-         </Grid>
+        </TabControl>
     </Grid>
 </Window>
