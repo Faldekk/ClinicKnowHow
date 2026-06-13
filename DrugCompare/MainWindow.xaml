@@ -15,12 +15,18 @@
         <Menu DockPanel.Dock="Top"
               Background="White"
               FontSize="13">
-
+    
             <MenuItem Header="_View">
                 <MenuItem Header="History"
                           Click="OpenHistory_Click"/>
             </MenuItem>
+            <MenuItem Header="_Modules">
+                <MenuItem Header="Drug Explorer"
+              Click="OpenDrugExplorer_Click"/>
 
+                <MenuItem Header="Polish Drug Registry"
+              Click="OpenPolishDrugRegistry_Click"/>
+            </MenuItem>
             <MenuItem Header="_Data">
                 <MenuItem Header="Database Status"
                           Click="OpenDatabaseStatus_Click"/>
@@ -43,6 +49,7 @@
                 <MenuItem Header="About"
                           Click="OpenAbout_Click"/>
             </MenuItem>
+          
         </Menu>
 
         <Border DockPanel.Dock="Top"
@@ -56,11 +63,13 @@
                     <TextBlock Text="Interaction Checker"
                                FontSize="20"
                                FontWeight="SemiBold"/>
+                    
 
                     <TextBlock Text="Check known active substance interactions using the local database."
                                FontSize="12"
                                Opacity="0.7"/>
                 </StackPanel>
+                
 
                 
             </DockPanel>

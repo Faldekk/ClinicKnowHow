@@ -1,9 +1,10 @@
-﻿using DrugCompare.Repositories.Contracts;
-using DrugCompare.Services.Contracts;
-using DrugCompare.Models;
-using DrugCompare.Views;
-using DrugCompare.ViewModels;
+﻿using DrugCompare.Models;
+using DrugCompare.Repositories.Contracts;
 using DrugCompare.Services;
+using DrugCompare.Services.Contracts;
+using DrugCompare.ViewModels;
+using DrugCompare.Views;
+using Npgsql;
 namespace DrugCompare.Services;
 
 public sealed class PostgresDrugDataService :
@@ -13,7 +14,8 @@ public sealed class PostgresDrugDataService :
     IInteractionCheckerService,
     IInteractionHistoryService,
     IDatabaseStatusService,
-    IDataManagementService
+    IDataManagementService,
+    IDrugExplorerService
 {
     private readonly IDrugRepository _drugRepository;
     private readonly ISubstanceRepository _substanceRepository;
@@ -21,6 +23,7 @@ public sealed class PostgresDrugDataService :
     private readonly IInteractionHistoryRepository _interactionHistoryRepository;
     private readonly IDatabaseStatusRepository _databaseStatusRepository;
     private readonly IDataManagementRepository _dataManagementRepository;
+    private readonly IDrugExplorerRepository _drugExplorerRepository;
 
 
     public PostgresDrugDataService(
@@ -29,7 +32,8 @@ public sealed class PostgresDrugDataService :
     IInteractionRepository interactionRepository,
     IInteractionHistoryRepository interactionHistoryRepository,
     IDatabaseStatusRepository databaseStatusRepository,
-    IDataManagementRepository dataManagementRepository)
+    IDataManagementRepository dataManagementRepository,
+    IDrugExplorerRepository drugExplorerRepository)
     {
         _drugRepository = drugRepository;
         _substanceRepository = substanceRepository;
@@ -37,6 +41,7 @@ public sealed class PostgresDrugDataService :
         _interactionHistoryRepository = interactionHistoryRepository;
         _databaseStatusRepository = databaseStatusRepository;
         _dataManagementRepository = dataManagementRepository;
+        _drugExplorerRepository = drugExplorerRepository;
     }
     
     public Task<DataManagementStatusResult> GetDataManagementStatusAsync()
@@ -89,4 +94,9 @@ public sealed class PostgresDrugDataService :
     {
         return _databaseStatusRepository.GetDatabaseStatusAsync();
     }
+    public Task<List<DrugExplorerResult>> SearchAsync(string query, int limit = 50)
+    {
+        return _drugExplorerRepository.SearchAsync(query, limit);
+    }
+    
 }

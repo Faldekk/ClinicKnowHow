@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using DrugCompare.Services.Application;
 using System.IO;
+using System.Diagnostics;
 
 namespace DrugCompare.ViewModels;
 
@@ -18,7 +19,9 @@ public sealed class MainViewModel : ObservableObject
     private readonly IInteractionCheckerService _interactionCheckerService;
     private readonly IDatabaseStatusService _databaseStatusService;
     private readonly IInteractionHistoryService _interactionHistoryService;
+    private readonly IDrugExplorerService _drugExplorerService;
     private readonly IDataManagementService _dataManagementService;
+    private readonly IPolishDrugRegistryService _polishDrugRegistryService;
     private readonly InteractionAnalysisService _interactionAnalysisService;
     private string _drugNameInput = string.Empty;
     private string _manualSubstanceInput = string.Empty;
@@ -27,6 +30,8 @@ public sealed class MainViewModel : ObservableObject
     private InteractionResult? _selectedInteraction;
     private readonly IAuditLogService _auditLogService;
     private AuditLogItem? _selectedAuditLog;
+    private string _polishDrugRegistryQuery = "";
+    private PolishDrugRegistryItem? _selectedPolishDrugRegistryItem;
     private string _selectedAuditLogDetails = "Select audit log entry to inspect details.";
     private string _resultSummaryMessage = "No interaction check performed yet.";
     private string _statusMessage = "Ready.";
@@ -34,6 +39,8 @@ public sealed class MainViewModel : ObservableObject
     private string _ddinterImportSummary = "DDInter import status not loaded.";
     private bool _isBusy;
     private string _databaseStatusText = "Database status not loaded.";
+    private string _drugExplorerQuery = "";
+    private DrugExplorerResult? _selectedDrugExplorerResult;
     public ObservableCollection<InteractionHistoryItem> InteractionHistory { get; } = new();
     public AsyncRelayCommand ExportCurrentReportCommand { get; }
     public ObservableCollection<AuditLogItem> AuditLogs { get; } = new();
@@ -46,7 +53,9 @@ public sealed class MainViewModel : ObservableObject
     IInteractionHistoryService interactionHistoryService,
     IDataManagementService dataManagementService,
     InteractionAnalysisService interactionAnalysisService,
-    IAuditLogService auditLogService)
+    IAuditLogService auditLogService, 
+    IDrugExplorerService drugExplorerService,
+    IPolishDrugRegistryService polishDrugRegistryService)
     {
         _drugLookupService = drugLookupService;
         _substanceLookupService = substanceLookupService;
@@ -55,6 +64,8 @@ public sealed class MainViewModel : ObservableObject
         _interactionHistoryService = interactionHistoryService;
         _dataManagementService = dataManagementService;
         _interactionAnalysisService = interactionAnalysisService;
+        _drugExplorerService = drugExplorerService;
+        _polishDrugRegistryService = polishDrugRegistryService;
 
         FindDrugCommand = new AsyncRelayCommand(FindDrugAsync);
         AcceptDetectedSubstanceCommand = new RelayCommand(AcceptDetectedSubstance);
@@ -69,6 +80,10 @@ public sealed class MainViewModel : ObservableObject
         ExportCurrentReportCommand = new AsyncRelayCommand(ExportCurrentReportAsync);
         _auditLogService = auditLogService;
         LoadAuditLogsCommand = new AsyncRelayCommand(LoadAuditLogsAsync);
+        SearchDrugExplorerCommand = new AsyncRelayCommand(SearchDrugExplorerAsync);
+        SearchPolishDrugRegistryCommand = new AsyncRelayCommand(SearchPolishDrugRegistryAsync);
+        OpenSelectedChplCommand = new RelayCommand(OpenSelectedChpl, CanOpenSelectedChpl);
+        OpenSelectedLeafletCommand = new RelayCommand(OpenSelectedLeaflet, CanOpenSelectedLeaflet);
     }
     public string DatabaseStatusText
     {
@@ -101,7 +116,24 @@ public sealed class MainViewModel : ObservableObject
         get => _manualSubstanceInput;
         set => SetProperty(ref _manualSubstanceInput, value);
     }
+    public string PolishDrugRegistryQuery
+    {
+        get => _polishDrugRegistryQuery;
+        set => SetProperty(ref _polishDrugRegistryQuery, value);
+    }
 
+    public PolishDrugRegistryItem? SelectedPolishDrugRegistryItem
+    {
+        get => _selectedPolishDrugRegistryItem;
+        set
+        {
+            if (SetProperty(ref _selectedPolishDrugRegistryItem, value))
+            {
+                OpenSelectedChplCommand.NotifyCanExecuteChanged();
+                OpenSelectedLeafletCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
     public ActiveSubstanceItem? SelectedDetectedSubstance
     {
         get => _selectedDetectedSubstance;
@@ -124,6 +156,17 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _statusMessage;
         set => SetProperty(ref _statusMessage, value);
+    }
+    public string DrugExplorerQuery
+    {
+        get => _drugExplorerQuery;
+        set => SetProperty(ref _drugExplorerQuery, value);
+    }
+
+    public DrugExplorerResult? SelectedDrugExplorerResult
+    {
+        get => _selectedDrugExplorerResult;
+        set => SetProperty(ref _selectedDrugExplorerResult, value);
     }
     public AuditLogItem? SelectedAuditLog
     {
@@ -151,10 +194,15 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<ActiveSubstanceItem> DetectedSubstances { get; } = new();
 
     public ObservableCollection<ActiveSubstanceItem> AcceptedSubstances { get; } = new();
-
+    public IAsyncRelayCommand SearchDrugExplorerCommand { get; }
+    public ObservableCollection<DrugExplorerResult> DrugExplorerResults { get; } = new();
     public ObservableCollection<InteractionResult> InteractionResults { get; } = new();
     public ObservableCollection<DataSourceVersionItem> RecentDataImports { get; } = new();
+    public ObservableCollection<PolishDrugRegistryItem> PolishDrugRegistryResults { get; } = new();
 
+    public IAsyncRelayCommand SearchPolishDrugRegistryCommand { get; }
+    public IRelayCommand OpenSelectedChplCommand { get; }
+    public IRelayCommand OpenSelectedLeafletCommand { get; }
     public IAsyncRelayCommand FindDrugCommand { get; }
 
     public IAsyncRelayCommand LoadHistoryCommand { get; }
@@ -213,6 +261,126 @@ public sealed class MainViewModel : ObservableObject
             EmaImportSummary = "EMA import status unavailable.";
             DdinterImportSummary = "DDInter import status unavailable.";
             StatusMessage = $"Data management loading failed: {ex.Message}";
+        }
+    }
+    private async Task SearchPolishDrugRegistryAsync()
+    {
+        PolishDrugRegistryResults.Clear();
+        SelectedPolishDrugRegistryItem = null;
+
+        if (string.IsNullOrWhiteSpace(PolishDrugRegistryQuery))
+        {
+            StatusMessage = "Enter Polish drug name, active substance, or authorization number.";
+            return;
+        }
+
+        IsBusy = true;
+        StatusMessage = "Searching Polish Drug Registry...";
+
+        try
+        {
+            var results = await _polishDrugRegistryService.SearchAsync(PolishDrugRegistryQuery, 100);
+
+            foreach (var item in results)
+            {
+                PolishDrugRegistryResults.Add(item);
+            }
+
+            SelectedPolishDrugRegistryItem = PolishDrugRegistryResults.FirstOrDefault();
+
+            StatusMessage = $"Found {PolishDrugRegistryResults.Count} Polish registry record(s).";
+
+            await _auditLogService.WriteAsync("PolishDrugRegistrySearched", new
+            {
+                Query = PolishDrugRegistryQuery.Trim(),
+                ResultCount = PolishDrugRegistryResults.Count,
+                Timestamp = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Polish registry search failed: {ToUserFriendlyDatabaseError(ex)}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool CanOpenSelectedChpl()
+    {
+        return !string.IsNullOrWhiteSpace(SelectedPolishDrugRegistryItem?.ChplUrl);
+    }
+
+    private bool CanOpenSelectedLeaflet()
+    {
+        return !string.IsNullOrWhiteSpace(SelectedPolishDrugRegistryItem?.LeafletUrl);
+    }
+
+    private void OpenSelectedChpl()
+    {
+        OpenUrl(SelectedPolishDrugRegistryItem?.ChplUrl);
+    }
+
+    private void OpenSelectedLeaflet()
+    {
+        OpenUrl(SelectedPolishDrugRegistryItem?.LeafletUrl);
+    }
+
+    private static void OpenUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = url,
+            UseShellExecute = true
+        });
+    }
+    private async Task SearchDrugExplorerAsync()
+    {
+        DrugExplorerResults.Clear();
+        SelectedDrugExplorerResult = null;
+
+        if (string.IsNullOrWhiteSpace(DrugExplorerQuery))
+        {
+            StatusMessage = "Enter drug name to search.";
+            return;
+        }
+
+        IsBusy = true;
+        StatusMessage = "Searching drug database...";
+
+        try
+        {
+            var results = await _drugExplorerService.SearchAsync(DrugExplorerQuery, 50);
+
+            foreach (var result in results)
+            {
+                DrugExplorerResults.Add(result);
+            }
+
+            SelectedDrugExplorerResult = DrugExplorerResults.FirstOrDefault();
+
+            StatusMessage = $"Found {DrugExplorerResults.Count} drug record(s).";
+
+            await _auditLogService.WriteAsync("DrugExplorerSearched", new
+            {
+                Query = DrugExplorerQuery.Trim(),
+                ResultCount = DrugExplorerResults.Count,
+                Timestamp = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Drug explorer search failed: {(ex)}";
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
     private async Task LoadDatabaseStatusAsync()

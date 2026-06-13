@@ -58,4 +58,12 @@ public partial class MainWindow : Window
 
         window.Show();
     }
+    private void OpenDrugExplorer_Click(object sender, RoutedEventArgs e)
+    {
+        OpenToolWindow("Drug Explorer", new DrugExplorerView());
+    }
+    private void OpenPolishDrugRegistry_Click(object sender, RoutedEventArgs e)
+    {
+        OpenToolWindow("Polish Drug Registry", new PolishDrugRegistryView());
+    }
 }
