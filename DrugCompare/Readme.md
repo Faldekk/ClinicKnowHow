@@ -1,147 +1,133 @@
+````markdown
 # MedCompare
 
-MedCompare to desktopowa aplikacja napisana w C# i WPF, której celem jest lokalne sprawdzanie informacji medycznych związanych z lekami, substancjami czynnymi, interakcjami oraz klasyfikacją ICD.
+**MedCompare** is a local desktop application for checking drug-related information, active substances, known substance interactions, Polish drug registry data, and ICD codes.
 
-Projekt powstał jako aplikacja edukacyjna/prototypowa. Chciałem stworzyć coś bardziej praktycznego niż zwykły CRUD — aplikację, która korzysta z realnych danych medycznych, działa lokalnie i pokazuje, jak można połączyć programowanie desktopowe, bazę danych i podstawy systemów wspomagania decyzji klinicznych.
+The application is designed as a local medical reference and clinical decision-support prototype. It does not use cloud APIs and does not send medical data outside the user's computer.
 
-Aplikacja nie korzysta z chmury ani z zewnętrznego API w trakcie działania. Dane są przechowywane lokalnie w bazie danych.
-
----
-
-## Co potrafi aplikacja
-
-Aktualnie MedCompare zawiera kilka głównych modułów:
-
-* sprawdzanie interakcji pomiędzy substancjami czynnymi,
-* wyszukiwanie leków i substancji,
-* przeglądanie danych z polskiego rejestru produktów leczniczych,
-* wyszukiwanie kodów ICD,
-* podgląd historii i logów zdarzeń,
-* tryb lokalny z bazą SQLite do wersji portable.
+> **Medical disclaimer:**  
+> MedCompare is an educational and technical prototype. It does not replace a physician, pharmacist, or qualified medical professional. Missing interaction data does not mean that a drug combination is safe. Every result must be clinically verified.
 
 ---
 
-## Główne moduły
+# 🇵🇱 Opis projektu
 
-### Interaction Checker
+MedCompare to aplikacja desktopowa napisana w technologii **WPF / .NET 8**, której celem jest lokalne wyszukiwanie informacji o lekach, substancjach czynnych, interakcjach oraz kodach ICD.
 
-To główny moduł aplikacji. Pozwala wyszukać lub ręcznie dodać substancje czynne, zaakceptować je do analizy, a następnie sprawdzić, czy w lokalnej bazie istnieją znane interakcje między wybranymi substancjami.
+Aplikacja działa lokalnie na komputerze użytkownika. W trybie portable korzysta z lokalnej bazy **SQLite**, dzięki czemu nie wymaga instalowania PostgreSQL ani żadnego zewnętrznego serwera bazy danych.
 
-Aplikacja pokazuje:
-
-* nazwę pierwszej substancji,
-* nazwę drugiej substancji,
-* poziom/severity interakcji,
-* źródło danych,
-* komunikat opisujący wynik.
-
-Ważne jest to, że aplikacja nie mówi, że dane połączenie jest “bezpieczne”, jeśli nie znajdzie interakcji. Brak wyniku oznacza tylko, że w lokalnej bazie nie znaleziono pasującego rekordu.
+Projekt powstał jako prototyp systemu wspierającego analizę danych medycznych, a nie jako narzędzie do samodzielnego podejmowania decyzji klinicznych.
 
 ---
 
-### Drug Explorer
+## Główne funkcje
 
-Ten moduł służy do przeglądania informacji o lekach oraz powiązanych substancjach czynnych. Jest to część rozwijana równolegle z bazą leków i importem danych.
-
-Docelowo ma pomagać szybko sprawdzić, jakie substancje czynne są powiązane z danym produktem leczniczym.
-
----
-
-### Polish Drug Registry
-
-Moduł oparty na danych z polskiego Rejestru Produktów Leczniczych.
-
-Pozwala wyszukiwać produkty lecznicze po:
-
-* nazwie produktu,
-* substancji czynnej,
-* numerze pozwolenia,
-* nazwie znormalizowanej.
-
-W bazie znajdują się m.in.:
-
-* nazwa produktu,
-* substancje czynne,
-* moc,
-* postać farmaceutyczna,
-* podmiot odpowiedzialny,
-* numer pozwolenia,
-* link do ChPL,
-* link do ulotki.
+- wyszukiwanie leku po nazwie,
+- wykrywanie substancji czynnych leku,
+- ręczne dodawanie substancji czynnych,
+- sprawdzanie znanych interakcji między substancjami,
+- obsługa lokalnej bazy interakcji opartej o dane DDInter,
+- wyszukiwarka leków z rejestru polskiego,
+- wyszukiwarka kodów ICD,
+- podgląd statusu lokalnej bazy danych,
+- historia sprawdzanych przypadków,
+- audit log działań użytkownika,
+- eksport raportu z aktualnej analizy,
+- tryb portable z lokalną bazą SQLite.
 
 ---
 
-### ICD Looker
+## Aktualna architektura
 
-Moduł do wyszukiwania kodów ICD. W aktualnej wersji używam danych ICD-11 w języku polskim.
-
-Można wyszukiwać po:
-
-* kodzie ICD,
-* nazwie choroby,
-* opisie,
-* kategorii/rozdziale.
-
-Przykładowe zapytania:
+Aplikacja została zbudowana w oparciu o podział na warstwy:
 
 ```text
-cukrzyca
-astma
-nadciśnienie
-depresja
-```
+Views
+ViewModels
+Services
+Repositories
+Database
+Models
+````
 
----
-
-## Dane
-
-Aplikacja korzysta z lokalnych danych zaimportowanych do bazy SQLite.
-
-Aktualna baza portable zawiera:
-
-| Dane                  |                       Tabela | Liczba rekordów |
-| --------------------- | ---------------------------: | --------------: |
-| Substancje czynne     |          `active_substances` |           3 628 |
-| Interakcje substancji |     `substance_interactions` |         627 553 |
-| ICD-11 PL             |                  `icd_codes` |          34 222 |
-| Polski rejestr leków  | `polish_drug_registry_items` |          22 785 |
-
-Dane pochodzą z przygotowanych wcześniej plików importowych CSV. Projekt był początkowo oparty o PostgreSQL, ale później dodałem tryb SQLite, żeby można było łatwiej uruchomić aplikację na innym komputerze bez instalowania bazy danych.
-
----
-
-## Tryby działania
-
-### PostgreSQL
-
-PostgreSQL był używany jako główna baza podczas developmentu. Ułatwiał import dużych plików, testowanie zapytań i rozwijanie struktury danych.
-
-Przykładowy connection string:
-
-```json
-{
-  "Database": {
-    "Provider": "PostgreSQL"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=drug_compare_db;Username=postgres;Password=YOUR_PASSWORD"
-  }
-}
-```
-
----
-
-### SQLite portable
-
-Tryb SQLite został dodany po to, żeby aplikację można było spakować do ZIP-a i uruchomić na innym komputerze bez pgAdmina, PostgreSQL i ręcznego importowania bazy.
-
-W tym trybie aplikacja korzysta z pliku:
+Najważniejsze elementy:
 
 ```text
+WPF UI
+  ↓
+MainViewModel
+  ↓
+Application Services
+  ↓
+Repository interfaces
+  ↓
+SQLite repositories
+  ↓
 data/medcompare.db
 ```
 
-Przykładowy `appsettings.json`:
+W trybie SQLite aplikacja korzysta z repozytoriów:
+
+* `SqliteDrugRepository`
+* `SqliteSubstanceRepository`
+* `SqliteInteractionRepository`
+* `SqliteDrugExplorerRepository`
+* `SqlitePolishDrugRegistryRepository`
+* `SqliteIcdCodeRepository`
+* `SqliteAuditLogRepository`
+* `SqliteDatabaseStatusService`
+
+Dzięki temu aplikacja może działać bez PostgreSQL.
+
+---
+
+## Źródła danych
+
+Projekt korzysta z lokalnie zaimportowanych danych:
+
+| Obszar                      | Źródło / tabela              |
+| --------------------------- | ---------------------------- |
+| Leki EMA                    | `drugs`                      |
+| Powiązania lek → substancja | `drug_active_substances`     |
+| Substancje czynne           | `active_substances`          |
+| Interakcje substancji       | `substance_interactions`     |
+| Polski rejestr leków        | `polish_drug_registry_items` |
+| ICD                         | `icd_codes`                  |
+| Audit log                   | `audit_logs`                 |
+
+Przepływ dla sprawdzania interakcji:
+
+```text
+Drug name
+  ↓
+EMA drug record
+  ↓
+active substances
+  ↓
+DDInter substance mapping
+  ↓
+substance_interactions
+  ↓
+interaction result
+```
+
+Polski rejestr leków jest używany w osobnej zakładce i nie powinien być głównym źródłem danych dla Interaction Checker.
+
+---
+
+## Tryb portable
+
+Aplikacja może zostać opublikowana jako samodzielny folder:
+
+```text
+publish/portable/
+├─ DrugCompare.exe
+├─ appsettings.json
+└─ data/
+   └─ medcompare.db
+```
+
+Wersja portable używa konfiguracji:
 
 ```json
 {
@@ -154,143 +140,43 @@ Przykładowy `appsettings.json`:
 }
 ```
 
-Dzięki temu aplikacja może działać lokalnie z jednym plikiem bazy.
+Baza danych `medcompare.db` nie powinna być commitowana bezpośrednio do repozytorium. Powinna być dostarczana jako osobny plik release albo lokalnie generowana/importowana.
 
 ---
 
-## Technologie
+## Uruchomienie projektu lokalnie
 
-W projekcie użyłem:
+Wymagania:
 
-* C#,
-* .NET 8,
-* WPF,
-* MVVM,
-* CommunityToolkit.Mvvm,
-* Dependency Injection,
-* PostgreSQL,
-* SQLite,
-* Npgsql,
-* Microsoft.Data.Sqlite.
+* Windows
+* .NET 8 SDK
+* Visual Studio 2022/2026 lub inny edytor obsługujący .NET
+* opcjonalnie `sqlite3` do inspekcji bazy danych
 
----
-
-## Struktura projektu
-
-Najważniejsze foldery:
-
-```text
-DrugCompare/
-├── Models/
-├── Repositories/
-├── Services/
-├── Services/Contracts/
-├── ViewModels/
-├── Views/
-├── Database/
-├── database/sqlite/
-├── data/
-└── appsettings.json
-```
-
-Najważniejsze elementy:
-
-```text
-Models/                       modele danych
-Repositories/                 dostęp do bazy danych
-Services/                     logika aplikacji
-Services/Contracts/           interfejsy usług
-ViewModels/                   logika widoków
-Views/                        widoki WPF
-Database/SqliteConnectionFactory.cs
-database/sqlite/schema_sqlite.sql
-data/medcompare.db
-```
-
----
-
-## Repozytoria danych
-
-Aplikacja ma osobne repozytoria dla PostgreSQL i SQLite.
-
-Przykłady repozytoriów PostgreSQL:
-
-```text
-PostgresIcdCodeRepository
-PostgresPolishDrugRegistryRepository
-PostgresAuditLogRepository
-PostgresInteractionRepository
-```
-
-Przykłady repozytoriów SQLite:
-
-```text
-SqliteIcdCodeRepository
-SqlitePolishDrugRegistryRepository
-SqliteAuditLogRepository
-SqliteInteractionRepository
-```
-
-W `App.xaml.cs` aplikacja sprawdza ustawienie:
-
-```json
-"Provider": "SQLite"
-```
-
-i na tej podstawie wybiera odpowiednie repozytoria.
-
----
-
-## Uruchomienie lokalne
-
-W folderze projektu:
+Kroki:
 
 ```powershell
+git clone https://github.com/Faldekk/MedCompare2.git
+cd MedCompare2/DrugCompare
+dotnet restore
 dotnet build
 dotnet run
 ```
 
-Dla trybu SQLite trzeba mieć plik:
+Jeżeli aplikacja działa w trybie SQLite, w folderze aplikacji musi istnieć:
 
 ```text
 data/medcompare.db
-```
-
-oraz odpowiednio ustawiony `appsettings.json`.
-
----
-
-## Tworzenie bazy SQLite
-
-Baza SQLite jest tworzona na podstawie pliku:
-
-```text
-database/sqlite/schema_sqlite.sql
-```
-
-Komendy:
-
-```powershell
-sqlite3 .\data\medcompare.db ".read .\database\sqlite\schema_sqlite.sql"
-sqlite3 .\data\medcompare.db ".tables"
-```
-
-Sprawdzenie liczby rekordów:
-
-```powershell
-sqlite3 .\data\medcompare.db "SELECT COUNT(*) FROM active_substances;"
-sqlite3 .\data\medcompare.db "SELECT COUNT(*) FROM substance_interactions;"
-sqlite3 .\data\medcompare.db "SELECT COUNT(*) FROM icd_codes;"
-sqlite3 .\data\medcompare.db "SELECT COUNT(*) FROM polish_drug_registry_items;"
 ```
 
 ---
 
 ## Publikacja wersji portable
 
-Aplikację można opublikować jako samodzielny build dla Windows:
-
 ```powershell
+dotnet clean
+Remove-Item -Recurse -Force .\bin, .\obj -ErrorAction SilentlyContinue
+
 dotnet publish .\DrugCompare.csproj `
   -c Release `
   -r win-x64 `
@@ -299,82 +185,292 @@ dotnet publish .\DrugCompare.csproj `
   /p:IncludeNativeLibrariesForSelfExtract=true `
   /p:EnableCompressionInSingleFile=true `
   -o .\publish\portable
-```
 
-Następnie trzeba skopiować bazę i konfigurację:
-
-```powershell
 New-Item -ItemType Directory -Path .\publish\portable\data -Force
 
 Copy-Item .\data\medcompare.db .\publish\portable\data\medcompare.db -Force
 Copy-Item .\appsettings.json .\publish\portable\appsettings.json -Force
+
+Compress-Archive `
+  -Path .\publish\portable\* `
+  -DestinationPath .\MedCompare-portable.zip `
+  -Force
 ```
 
-Finalny ZIP powinien wyglądać mniej więcej tak:
+Po rozpakowaniu ZIP-a aplikacja powinna działać bez instalowania bazy danych.
+
+---
+
+## Ważne informacje bezpieczeństwa
+
+MedCompare nie powinien być traktowany jako system decydujący o leczeniu.
+
+Komunikat bezpieczeństwa stosowany w aplikacji:
 
 ```text
-MedCompare-portable.zip
-├── DrugCompare.exe
-├── appsettings.json
-└── data/
-    └── medcompare.db
+No known interaction was found in the local database.
+Missing interaction data does not mean that the combination is safe.
 ```
 
-Po wypakowaniu ZIP-a aplikację można uruchomić przez:
-
-```text
-DrugCompare.exe
-```
+Oznacza to, że brak wyniku w lokalnej bazie nie jest potwierdzeniem bezpieczeństwa terapii.
 
 ---
 
 ## Status projektu
 
-Projekt jest w fazie prototypu. Najważniejsze funkcje lokalne już działają, ale część modułów nadal jest rozwijana.
+Obecnie projekt posiada:
 
-Aktualnie najważniejsze rzeczy, które są zrobione:
-
-* aplikacja WPF z modułami,
-* import danych medycznych,
-* lokalna baza SQLite,
-* sprawdzanie interakcji,
-* wyszukiwanie ICD,
-* wyszukiwanie produktów z polskiego rejestru,
-* podstawowa obsługa logów,
-* przygotowanie wersji portable.
-
-Rzeczy do dalszego rozwoju:
-
-* pełniejsze dopracowanie Drug Explorer,
-* lepszy panel Data Management dla SQLite,
-* lepszy panel Database Status dla SQLite,
-* automatyzacja importu danych,
-* poprawa UI,
-* lepsze komunikaty dla użytkownika,
-* instalator albo wygodniejszy release ZIP.
+* działający tryb SQLite portable,
+* lokalne wyszukiwanie leków z danych EMA,
+* mapowanie leków na substancje czynne,
+* sprawdzanie interakcji substancji,
+* fallback dla duplikatów substancji przez `normalized_name`,
+* działający widok Interaction Checker,
+* widok statusu bazy danych SQLite,
+* obsługę polskiego rejestru leków,
+* obsługę kodów ICD,
+* audit log,
+* eksport raportu.
 
 ---
 
-## Ważna informacja medyczna
+## Shoutout
 
-MedCompare nie jest certyfikowanym wyrobem medycznym.
+Projekt rozwijany jako praktyczny prototyp lokalnej aplikacji medycznej i systemu wspierającego analizę danych lekowych.
 
-Aplikacja jest prototypem edukacyjnym i nie powinna być używana jako jedyne źródło decyzji medycznych.
-
-Brak znalezionej interakcji w lokalnej bazie nie oznacza, że dane połączenie leków lub substancji jest bezpieczne. Oznacza tylko, że aplikacja nie znalazła pasującego rekordu w danych, które aktualnie posiada.
-
-W razie wątpliwości decyzje medyczne powinny być konsultowane z lekarzem lub farmaceutą.
+Special shoutout dla taty za bycie realnym powodem, żeby doprowadzić aplikację do wersji portable, która faktycznie działa poza środowiskiem developerskim.
 
 ---
 
-## Autor
+# 🇬🇧 English Description
 
-Projekt tworzony jako aplikacja edukacyjna i praktyczny eksperyment z lokalnym systemem wspomagania informacji medycznej.
+MedCompare is a desktop application built with **WPF / .NET 8** for local drug lookup, active substance detection, interaction checking, Polish drug registry search, and ICD code search.
 
-Celem było połączenie:
+The application runs locally on the user's machine. In portable mode, it uses a local **SQLite** database, so it does not require PostgreSQL or any external database server.
 
-* aplikacji desktopowej,
-* lokalnej bazy danych,
-* realnych danych lekowych,
-* prostego systemu sprawdzania interakcji,
-* wersji portable możliwej do uruchomienia na innym komputerze.
+The project is a clinical decision-support prototype and a medical data reference tool. It is not intended to replace professional medical judgment.
+
+---
+
+## Main features
+
+* drug lookup by name,
+* active substance detection,
+* manual active substance entry,
+* known substance interaction checking,
+* local DDInter-based interaction database,
+* Polish drug registry search,
+* ICD code search,
+* local database status view,
+* interaction history,
+* audit log,
+* report export,
+* portable SQLite mode.
+
+---
+
+## Current architecture
+
+The application follows a layered structure:
+
+```text
+Views
+ViewModels
+Services
+Repositories
+Database
+Models
+```
+
+Main flow:
+
+```text
+WPF UI
+  ↓
+MainViewModel
+  ↓
+Application Services
+  ↓
+Repository interfaces
+  ↓
+SQLite repositories
+  ↓
+data/medcompare.db
+```
+
+In SQLite mode, the application uses:
+
+* `SqliteDrugRepository`
+* `SqliteSubstanceRepository`
+* `SqliteInteractionRepository`
+* `SqliteDrugExplorerRepository`
+* `SqlitePolishDrugRegistryRepository`
+* `SqliteIcdCodeRepository`
+* `SqliteAuditLogRepository`
+* `SqliteDatabaseStatusService`
+
+This allows the application to run without PostgreSQL.
+
+---
+
+## Data sources
+
+The application uses locally imported data:
+
+| Area                          | Source / table               |
+| ----------------------------- | ---------------------------- |
+| EMA drugs                     | `drugs`                      |
+| Drug-active substance mapping | `drug_active_substances`     |
+| Active substances             | `active_substances`          |
+| Substance interactions        | `substance_interactions`     |
+| Polish drug registry          | `polish_drug_registry_items` |
+| ICD codes                     | `icd_codes`                  |
+| Audit log                     | `audit_logs`                 |
+
+Interaction checking flow:
+
+```text
+Drug name
+  ↓
+EMA drug record
+  ↓
+active substances
+  ↓
+DDInter substance mapping
+  ↓
+substance_interactions
+  ↓
+interaction result
+```
+
+The Polish drug registry is used in a separate module and is not the main source for the Interaction Checker.
+
+---
+
+## Portable mode
+
+The portable release should have this structure:
+
+```text
+publish/portable/
+├─ DrugCompare.exe
+├─ appsettings.json
+└─ data/
+   └─ medcompare.db
+```
+
+Portable configuration:
+
+```json
+{
+  "Database": {
+    "Provider": "SQLite"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=data/medcompare.db"
+  }
+}
+```
+
+The `medcompare.db` database file should not be committed directly to the repository. It should be distributed as a release artifact or generated/imported locally.
+
+---
+
+## Running locally
+
+Requirements:
+
+* Windows
+* .NET 8 SDK
+* Visual Studio 2022/2026 or another .NET-compatible editor
+* optional `sqlite3` for database inspection
+
+Steps:
+
+```powershell
+git clone https://github.com/Faldekk/MedCompare2.git
+cd MedCompare2/DrugCompare
+dotnet restore
+dotnet build
+dotnet run
+```
+
+For SQLite mode, the following file must exist:
+
+```text
+data/medcompare.db
+```
+
+---
+
+## Publishing portable release
+
+```powershell
+dotnet clean
+Remove-Item -Recurse -Force .\bin, .\obj -ErrorAction SilentlyContinue
+
+dotnet publish .\DrugCompare.csproj `
+  -c Release `
+  -r win-x64 `
+  --self-contained true `
+  /p:PublishSingleFile=true `
+  /p:IncludeNativeLibrariesForSelfExtract=true `
+  /p:EnableCompressionInSingleFile=true `
+  -o .\publish\portable
+
+New-Item -ItemType Directory -Path .\publish\portable\data -Force
+
+Copy-Item .\data\medcompare.db .\publish\portable\data\medcompare.db -Force
+Copy-Item .\appsettings.json .\publish\portable\appsettings.json -Force
+
+Compress-Archive `
+  -Path .\publish\portable\* `
+  -DestinationPath .\MedCompare-portable.zip `
+  -Force
+```
+
+After extracting the ZIP file, the application should run without installing a database server.
+
+---
+
+## Safety notice
+
+MedCompare should not be treated as a system that makes medical decisions.
+
+The application uses the following safety wording:
+
+```text
+No known interaction was found in the local database.
+Missing interaction data does not mean that the combination is safe.
+```
+
+This means that missing data in the local database is not proof that a combination is safe.
+
+---
+
+## Project status
+
+The current version includes:
+
+* working SQLite portable mode,
+* local EMA drug lookup,
+* drug-to-active-substance mapping,
+* substance interaction checking,
+* fallback matching for duplicated substances through `normalized_name`,
+* working Interaction Checker view,
+* SQLite database status view,
+* Polish drug registry support,
+* ICD code support,
+* audit log,
+* report export.
+
+---
+
+## Shoutout
+
+This project is developed as a practical prototype of a local medical reference application and drug data analysis tool.
+
+Special shoutout to my dad for being the real reason to finish the portable version and make the app usable outside the development environment.
+
+```
+```
