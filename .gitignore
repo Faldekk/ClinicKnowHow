@@ -10,6 +10,17 @@ x64/
 x86/
 [Bb]uild/
 [Ll]og/
+bin/
+obj/
+publish/
+*.zip
+
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+*.user
+.vs/
 
 *.exe
 *.user
