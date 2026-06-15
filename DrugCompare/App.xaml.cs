@@ -8,6 +8,9 @@ using DrugCompare.Services.Application;
 using DrugCompare.Repositories;
 using DrugCompare.Repositories.Contracts;
 using DrugCompare.Database;
+using DrugCompare.ViewModels.Interaction;
+using DrugCompare.ViewModels.ICD;
+using DrugCompare.ViewModels.DrugExplorer;
 
 
 namespace DrugCompare;
@@ -99,12 +102,12 @@ public partial class App : Application
         if (useSqlite)
         {
             services.AddSingleton<SqliteConnectionFactory>();
-
+            services.AddSingleton<InteractionCheckerViewModel>();
             services.AddSingleton<IDrugRepository, SqliteDrugRepository>();
             services.AddSingleton<ISubstanceRepository, SqliteSubstanceRepository>();
             services.AddSingleton<IInteractionRepository, SqliteInteractionRepository>();
             services.AddSingleton<IDrugExplorerRepository, SqliteDrugExplorerRepository>();
-
+            services.AddSingleton<ICDLookerViewModel>();
             services.AddSingleton<IAuditLogRepository, SqliteAuditLogRepository>();
             services.AddSingleton<IIcdCodeRepository, SqliteIcdCodeRepository>();
             services.AddSingleton<IPolishDrugRegistryRepository, SqlitePolishDrugRegistryRepository>();
@@ -118,11 +121,15 @@ public partial class App : Application
             services.AddSingleton<ISubstanceRepository, PostgresSubstanceRepository>();
             services.AddSingleton<IInteractionRepository, PostgresInteractionRepository>();
             services.AddSingleton<IDrugExplorerRepository, PostgresDrugExplorerRepository>();
-
+            services.AddSingleton<InteractionCheckerViewModel>();
+            services.AddSingleton<ICDLookerViewModel>();
             services.AddSingleton<IAuditLogRepository, PostgresAuditLogRepository>();
             services.AddSingleton<IIcdCodeRepository, PostgresIcdCodeRepository>();
             services.AddSingleton<IPolishDrugRegistryRepository, PostgresPolishDrugRegistryRepository>();
-
+            services.AddSingleton<InteractionCheckerViewModel>();
+            services.AddSingleton<ICDLookerViewModel>();
+            services.AddSingleton<DrugExplorerViewModel>();
+            services.AddSingleton<MainViewModel>();
             services.AddSingleton<IDatabaseStatusRepository, PostgresDatabaseStatusRepository>();
             services.AddSingleton<IDataManagementRepository, PostgresDataManagementRepository>();
         }

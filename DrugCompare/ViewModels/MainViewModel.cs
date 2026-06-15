@@ -2,13 +2,15 @@
 using CommunityToolkit.Mvvm.Input;
 using DrugCompare.Models;
 using DrugCompare.Services;
+using DrugCompare.Services.Application;
 using DrugCompare.Services.Contracts;
+using DrugCompare.ViewModels.ICD;
+using DrugCompare.ViewModels.Interaction;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
-using System.Text.Json;
-using DrugCompare.Services.Application;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
 
 namespace DrugCompare.ViewModels;
 
@@ -49,20 +51,26 @@ public sealed class MainViewModel : ObservableObject
     public AsyncRelayCommand ExportCurrentReportCommand { get; }
     public ObservableCollection<AuditLogItem> AuditLogs { get; } = new();
 
+    public InteractionCheckerViewModel InteractionChecker { get; }
+    public ICDLookerViewModel ICDLooker { get; }
+
     public MainViewModel(
-    IDrugLookupService drugLookupService,
-    ISubstanceLookupService substanceLookupService,
-    IInteractionCheckerService interactionCheckerService,
-    IDatabaseStatusService databaseStatusService,
-    IInteractionHistoryService interactionHistoryService,
-    IDataManagementService dataManagementService,
-    InteractionAnalysisService interactionAnalysisService,
-    IAuditLogService auditLogService, 
-    IDrugExplorerService drugExplorerService,
-    IPolishDrugRegistryService polishDrugRegistryService,
-    IIcdCodeService icdCodeService)
+     InteractionCheckerViewModel interactionChecker,
+     ICDLookerViewModel icdLooker,
+     IDrugLookupService drugLookupService,
+     ISubstanceLookupService substanceLookupService,
+     IInteractionCheckerService interactionCheckerService,
+     IDatabaseStatusService databaseStatusService,
+     IInteractionHistoryService interactionHistoryService,
+     IDataManagementService dataManagementService,
+     InteractionAnalysisService interactionAnalysisService,
+     IAuditLogService auditLogService,
+     IDrugExplorerService drugExplorerService,
+     IPolishDrugRegistryService polishDrugRegistryService,
+     IIcdCodeService icdCodeService)
     {
-        _icdCodeService = icdCodeService;
+        InteractionChecker = interactionChecker;
+        ICDLooker = icdLooker;
         _drugLookupService = drugLookupService;
         _substanceLookupService = substanceLookupService;
         _interactionCheckerService = interactionCheckerService;
@@ -221,6 +229,7 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<InteractionResult> InteractionResults { get; } = new();
     public ObservableCollection<DataSourceVersionItem> RecentDataImports { get; } = new();
     public ObservableCollection<PolishDrugRegistryItem> PolishDrugRegistryResults { get; } = new();
+    
     public string SelectedIcdCategory
     {
         get => _selectedIcdCategory;

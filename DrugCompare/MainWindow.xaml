@@ -102,19 +102,19 @@
             </TabControl.Resources>
 
             <TabItem Header="Interaction Checker">
-                <views:InteractionCheckView />
+                <views:InteractionCheckView DataContext="{Binding InteractionChecker}" />
             </TabItem>
 
             <TabItem Header="Drug Explorer">
-                <views:DrugExplorerView />
+                <views:DrugExplorerView DataContext="{Binding DrugExplorer}" />
             </TabItem>
 
             <TabItem Header="Polish Drug Registry">
-                <views:PolishDrugRegistryView />
+                <views:PolishDrugRegistryView DataContext="{Binding PolishDrugRegistry}" />
             </TabItem>
             
             <TabItem Header="ICD Looker">
-                <views:IcdLookerView />
+                <views:IcdLookerView DataContext="{Binding IcdLooker}" />
             </TabItem>
 
         </TabControl>
