@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using DrugCompare.Models;
 using DrugCompare.Services.Contracts;
 using DrugCompare.ViewModels.DrugExplorer;
+
 using DrugCompare.ViewModels.ICD;
 using DrugCompare.ViewModels.Interaction;
 using DrugCompare.ViewModels.PolishRegistry;
@@ -29,17 +30,17 @@ public sealed class MainViewModel : ObservableObject
     private string _selectedAuditLogDetails = "Select audit log entry to inspect details.";
 
     public MainViewModel(
-        InteractionCheckerViewModel interactionChecker,
-        ICDLookerViewModel icdLooker,
-        DrugExplorerViewModel drugExplorer,
-        PolishDrugRegistryViewModel polishDrugRegistry,
-        IDatabaseStatusService databaseStatusService,
-        IDataManagementService dataManagementService,
-        IInteractionHistoryService interactionHistoryService,
-        IAuditLogService auditLogService)
+    InteractionCheckerViewModel interactionChecker,
+    IcdLookerViewModel icdLooker,
+    DrugExplorerViewModel drugExplorer,
+    PolishDrugRegistryViewModel polishDrugRegistry,
+    IDatabaseStatusService databaseStatusService,
+    IDataManagementService dataManagementService,
+    IInteractionHistoryService interactionHistoryService,
+    IAuditLogService auditLogService)
     {
         InteractionChecker = interactionChecker;
-        ICDLooker = icdLooker;
+        IcdLooker = icdLooker;
         DrugExplorer = drugExplorer;
         PolishDrugRegistry = polishDrugRegistry;
 
@@ -53,12 +54,13 @@ public sealed class MainViewModel : ObservableObject
         LoadHistoryCommand = new AsyncRelayCommand(LoadHistoryAsync);
         LoadAuditLogsCommand = new AsyncRelayCommand(LoadAuditLogsAsync);
     }
+    
 
     // Child ViewModels refactor part
 
     public InteractionCheckerViewModel InteractionChecker { get; }
 
-    public ICDLookerViewModel ICDLooker { get; }
+    public IcdLookerViewModel IcdLooker { get; }
 
     public DrugExplorerViewModel DrugExplorer { get; }
 

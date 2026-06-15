@@ -98,19 +98,19 @@
             </TabControl.Resources>
 
             <TabItem Header="Interaction Checker">
-                <views:InteractionCheckView DataContext="{Binding InteractionChecker}" />
+                <views:InteractionCheckView DataContext="{Binding InteractionCheckView}" />
             </TabItem>
 
             <TabItem Header="Drug Explorer">
-                <views:DrugExplorerView DataContext="{Binding DrugExplorer}" />
+                <views:DrugExplorerView DataContext="{Binding DrugExplorerView}" />
             </TabItem>
 
             <TabItem Header="Polish Drug Registry">
-                <views:PolishDrugRegistryView DataContext="{Binding PolishDrugRegistry}" />
+                <views:PolishDrugRegistryView DataContext="{Binding PolishDrugRegistryView}" />
             </TabItem>
 
             <TabItem Header="ICD Looker">
-                <views:IcdLookerView DataContext="{Binding IcdLooker}" />
+                <views:IcdLookerView DataContext="{Binding IcdLookerView}" />
             </TabItem>
 
         </TabControl>

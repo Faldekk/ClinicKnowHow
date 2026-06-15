@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace DrugCompare.ViewModels.ICD;
 
-public sealed class ICDLookerViewModel : ObservableObject
+public sealed class IcdLookerViewModel : ObservableObject
 {
     private readonly IIcdCodeService _icdCodeService;
 
@@ -16,7 +16,7 @@ public sealed class ICDLookerViewModel : ObservableObject
     private string _statusMessage = "Ready.";
     private bool _isBusy;
 
-    public ICDLookerViewModel(IIcdCodeService icdCodeService)
+    public IcdLookerViewModel(IIcdCodeService icdCodeService)
     {
         _icdCodeService = icdCodeService;
 

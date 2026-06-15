@@ -8,7 +8,7 @@ public sealed class SeverityToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var severity = value?.ToString()?.Trim().ToLowerInvariant() ?? "";
+        var severity = value?.ToString()?.Trim().ToLowerInvariant() ?? string.Empty;
 
         return severity switch
         {

@@ -11,6 +11,7 @@ using DrugCompare.ViewModels.Interaction;
 using DrugCompare.ViewModels.PolishRegistry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using System.IO;
 using System.Windows;
 
@@ -37,6 +38,7 @@ public partial class App : Application
         services.AddSingleton<IConfiguration>(configuration);
 
         RegisterDatabase(configuration, services);
+        RegisterSqliteServices(services);
         RegisterApplicationServices(services);
         RegisterViewModels(services);
         RegisterViews(services);
@@ -77,6 +79,7 @@ public partial class App : Application
         services.AddSingleton<ISubstanceRepository, SqliteSubstanceRepository>();
         services.AddSingleton<IInteractionRepository, SqliteInteractionRepository>();
         services.AddSingleton<IDrugExplorerRepository, SqliteDrugExplorerRepository>();
+        services.AddSingleton<IInteractionHistoryRepository, SqliteInteractionHistoryRepository>();
 
         services.AddSingleton<IPolishDrugRegistryRepository, SqlitePolishDrugRegistryRepository>();
         services.AddSingleton<IIcdCodeRepository, SqliteIcdCodeRepository>();
@@ -88,6 +91,10 @@ public partial class App : Application
 
     private static void RegisterApplicationServices(IServiceCollection services)
     {
+        /*
+         * This class still has an old name, but it works as a service wrapper.
+         * It uses repository interfaces, so in SQLite mode it will use SQLite repositories.
+         */
         services.AddSingleton<PostgresDrugDataService>();
 
         services.AddSingleton<IDrugLookupService>(sp =>
@@ -118,7 +125,7 @@ public partial class App : Application
     private static void RegisterViewModels(IServiceCollection services)
     {
         services.AddSingleton<InteractionCheckerViewModel>();
-        services.AddSingleton<ICDLookerViewModel>();
+        services.AddSingleton<IcdLookerViewModel>();
         services.AddSingleton<DrugExplorerViewModel>();
         services.AddSingleton<PolishDrugRegistryViewModel>();
 
