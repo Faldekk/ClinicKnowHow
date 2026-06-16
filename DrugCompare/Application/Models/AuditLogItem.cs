@@ -8,5 +8,7 @@ public sealed class AuditLogItem
 
     public string? Details { get; set; }
 
+    public string? DetailsJson { get; set; }
+
     public DateTime CreatedAt { get; set; }
 }

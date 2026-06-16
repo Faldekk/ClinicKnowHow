@@ -5,11 +5,11 @@ using DrugCompare.Infrastructure.Postgres;
 using DrugCompare.Features.InteractionChecker;
 using DrugCompare.Features.DrugExplorer;
 using DrugCompare.Features.PolishRegistry;
+using DrugCompare.Application.Services.Implementations;
 using DrugCompare.Features.IcdLooker;
 using DrugCompare.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using DrugCompare.Application.Services.Contracts;
-using DrugCompare.Application.Services.Implementations;
 using DrugCompare.Application.Repositories.Contracts;
 using System.IO;
 using System.Windows;
@@ -113,11 +113,12 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IDrugExplorerService>(sp =>
             sp.GetRequiredService<PostgresDrugDataService>());
 
+        services.AddSingleton<IDatabaseStatusService, DatabaseStatusService>();
+        services.AddSingleton<IDataManagementService, DisabledDataManagementService>();
         services.AddSingleton<IPolishDrugRegistryService, PolishDrugRegistryService>();
-        services.AddSingleton<IIcdCodeService, IcdCodeService>();
+        services.AddSingleton<IIcdCodeService, IcdLookerService>();
         services.AddSingleton<IAuditLogService, AuditLogService>();
-
-        services.AddSingleton<InteractionAnalysisService>();
+    
     }
 
     private static void RegisterViewModels(IServiceCollection services)

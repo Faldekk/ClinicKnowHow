@@ -6,11 +6,11 @@ namespace DrugCompare.Infrastructure.Postgres;
 
 public sealed class PostgresAuditLogRepository : IAuditLogRepository
 {
-    private readonly NpgsqlDataSource _dataSource;
+    private readonly string _connectionString;
 
-    public PostgresAuditLogRepository(NpgsqlDataSource dataSource)
+    public PostgresAuditLogRepository(string connectionString)
     {
-        _dataSource = dataSource;
+        _connectionString = connectionString;
     }
 
     public async Task AddAsync(string eventType, string? details = null)
@@ -20,9 +20,10 @@ public sealed class PostgresAuditLogRepository : IAuditLogRepository
             VALUES (@event_type, @details, NOW());
             """;
 
-        await using var connection = await _dataSource.OpenConnectionAsync();
-        await using var command = new NpgsqlCommand(sql, connection);
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
 
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.AddWithValue("event_type", eventType);
         command.Parameters.AddWithValue("details", (object?)details ?? DBNull.Value);
 
@@ -40,7 +41,9 @@ public sealed class PostgresAuditLogRepository : IAuditLogRepository
 
         var result = new List<AuditLogItem>();
 
-        await using var connection = await _dataSource.OpenConnectionAsync();
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
         await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.AddWithValue("limit", limit);
 

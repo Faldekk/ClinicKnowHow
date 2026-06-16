@@ -1,6 +1,5 @@
 using DrugCompare.Application.Repositories.Contracts;
 using DrugCompare.Application.Models;
-using DrugCompare.Application.Repositories.Contracts;
 using DrugCompare.Infrastructure.SQLite;
 using Microsoft.Data.Sqlite;
 
