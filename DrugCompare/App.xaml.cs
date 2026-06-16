@@ -62,10 +62,19 @@ public partial class App : System.Windows.Application
 
         throw new InvalidOperationException($"Unsupported database provider: {provider}");
     }
+    private static void RegisterViewModels(IServiceCollection services)
+    {
+        services.AddSingleton<InteractionCheckerViewModel>();
+        services.AddSingleton<PolishDrugRegistryViewModel>();
+        services.AddSingleton<IcdLookerViewModel>();
 
+        services.AddSingleton<MainViewModel>();
+    }
     private static void RegisterSqliteServices(IServiceCollection services)
     {
+      
         services.AddSingleton<SqliteConnectionFactory>();
+        services.AddSingleton<IDrugRepository, SqliteDrugRepository>();
 
         services.AddSingleton<IDrugRepository, SqliteDrugRepository>();
         services.AddSingleton<ISubstanceRepository, SqliteSubstanceRepository>();
@@ -110,17 +119,6 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IIcdCodeService, IcdCodeService>();
         services.AddSingleton<IAuditLogService, AuditLogService>();
     }
-
-    private static void RegisterViewModels(IServiceCollection services)
-    {
-        services.AddSingleton<InteractionCheckerViewModel>();
-        services.AddSingleton<DrugExplorerViewModel>();
-        services.AddSingleton<PolishDrugRegistryViewModel>();
-        services.AddSingleton<IcdLookerViewModel>();
-
-        services.AddSingleton<MainViewModel>();
-    }
-
     private static void RegisterViews(IServiceCollection services)
     {
         services.AddSingleton<MainWindow>();

@@ -13,8 +13,24 @@ public sealed class IcdCodeService : IIcdCodeService
         _repository = repository;
     }
 
-    public Task<List<IcdCodeItem>> SearchAsync(string query, int limit = 50)
+    public Task<List<IcdCodeItem>> SearchAsync(
+        string query,
+        string? chapterFilter,
+        int limit = 100)
     {
-        return _repository.SearchAsync(query, limit);
+        return _repository.SearchAsync(query, chapterFilter, limit);
+    }
+
+    public Task<List<IcdCodeItem>> SearchCodesAsync(
+        string query,
+        string? chapterFilter,
+        int limit = 100)
+    {
+        return _repository.SearchCodesAsync(query, chapterFilter, limit);
+    }
+
+    public Task<List<string>> GetCategoriesAsync()
+    {
+        return _repository.GetCategoriesAsync();
     }
 }

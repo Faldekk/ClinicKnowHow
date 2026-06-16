@@ -1,12 +1,10 @@
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DrugCompare.Features.DrugExplorer;
+using DrugCompare.Application.Models;
+using DrugCompare.Application.Services.Contracts;
 using DrugCompare.Features.IcdLooker;
 using DrugCompare.Features.InteractionChecker;
 using DrugCompare.Features.PolishRegistry;
-using DrugCompare.Application.Models;
-using DrugCompare.Application.Services.Contracts;
 using DrugCompare.ViewModels.Interaction;
 using System.Collections.ObjectModel;
 using System.Text.Json;
@@ -30,18 +28,16 @@ public sealed class MainViewModel : ObservableObject
     private string _selectedAuditLogDetails = "Select audit log entry to inspect details.";
 
     public MainViewModel(
-    InteractionCheckerViewModel interactionChecker,
-    IcdLookerViewModel icdLooker,
-    DrugExplorerViewModel drugExplorer,
-    PolishDrugRegistryViewModel polishDrugRegistry,
-    IDatabaseStatusService databaseStatusService,
-    IDataManagementService dataManagementService,
-    IInteractionHistoryService interactionHistoryService,
-    IAuditLogService auditLogService)
+        InteractionCheckerViewModel interactionChecker,
+        IcdLookerViewModel icdLooker,
+        PolishDrugRegistryViewModel polishDrugRegistry,
+        IDatabaseStatusService databaseStatusService,
+        IDataManagementService dataManagementService,
+        IInteractionHistoryService interactionHistoryService,
+        IAuditLogService auditLogService)
     {
         InteractionChecker = interactionChecker;
         IcdLooker = icdLooker;
-        DrugExplorer = drugExplorer;
         PolishDrugRegistry = polishDrugRegistry;
 
         _databaseStatusService = databaseStatusService;
@@ -54,19 +50,12 @@ public sealed class MainViewModel : ObservableObject
         LoadHistoryCommand = new AsyncRelayCommand(LoadHistoryAsync);
         LoadAuditLogsCommand = new AsyncRelayCommand(LoadAuditLogsAsync);
     }
-    
-
-    // Child ViewModels refactor part
 
     public InteractionCheckerViewModel InteractionChecker { get; }
 
     public IcdLookerViewModel IcdLooker { get; }
 
-    public DrugExplorerViewModel DrugExplorer { get; }
-
     public PolishDrugRegistryViewModel PolishDrugRegistry { get; }
-
-    // Shared / remaining state
 
     public string DatabaseStatusText
     {
@@ -122,8 +111,6 @@ public sealed class MainViewModel : ObservableObject
 
     public ObservableCollection<AuditLogItem> AuditLogs { get; } = new();
 
-    // Commands 
-
     public IAsyncRelayCommand LoadDatabaseStatusCommand { get; }
 
     public IAsyncRelayCommand LoadDataManagementCommand { get; }
@@ -131,8 +118,6 @@ public sealed class MainViewModel : ObservableObject
     public IAsyncRelayCommand LoadHistoryCommand { get; }
 
     public IAsyncRelayCommand LoadAuditLogsCommand { get; }
-
-    // Database Status
 
     public async Task<DatabaseStatusResult> GetDatabaseStatusForStartupAsync()
     {
@@ -175,8 +160,6 @@ public sealed class MainViewModel : ObservableObject
             IsBusy = false;
         }
     }
-
-    // Data Management
 
     private async Task LoadDataManagementAsync()
     {
@@ -225,9 +208,6 @@ public sealed class MainViewModel : ObservableObject
             $"Imported: {item.ImportedAt:yyyy-MM-dd HH:mm}";
     }
 
-    // History
-    // Current version: kept for UI compatibility, but the module is not considered stable.
-
     private async Task LoadHistoryAsync()
     {
         IsBusy = true;
@@ -255,9 +235,6 @@ public sealed class MainViewModel : ObservableObject
             IsBusy = false;
         }
     }
-
-    // Audit Log
-    // Current version: kept for UI compatibility, but the module is not considered stable.
 
     private async Task LoadAuditLogsAsync()
     {
@@ -329,4 +306,3 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 }
-

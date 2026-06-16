@@ -1,11 +1,9 @@
-using DrugCompare.Infrastructure.SQLite;
 using DrugCompare.Application.Models;
 using DrugCompare.Application.Repositories.Contracts;
-using Microsoft.Data.Sqlite;
 
 namespace DrugCompare.Infrastructure.SQLite;
 
-public class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepository
+public sealed class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepository
 {
     private readonly SqliteConnectionFactory _connectionFactory;
 
@@ -16,16 +14,12 @@ public class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepository
 
     public async Task<List<PolishDrugRegistryItem>> SearchAsync(string query, int limit = 100)
     {
-        var results = new List<PolishDrugRegistryItem>();
+        var result = new List<PolishDrugRegistryItem>();
 
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return results;
-        }
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
 
-        var trimmedQuery = query.Trim();
-
-        const string sql = """
+        var sql = """
             SELECT
                 id,
                 rpl_id,
@@ -45,125 +39,124 @@ public class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepository
                 source_version,
                 imported_at
             FROM polish_drug_registry_items
-            WHERE
-                lower(COALESCE(product_name, '')) LIKE '%' || lower(@query) || '%'
-                OR lower(COALESCE(normalized_product_name, '')) LIKE '%' || lower(@query) || '%'
-                OR lower(COALESCE(active_substance_text, '')) LIKE '%' || lower(@query) || '%'
-                OR lower(COALESCE(authorization_number, '')) LIKE '%' || lower(@query) || '%'
+            WHERE 1 = 1
+            """;
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            sql += """
+                
+                AND (
+                    lower(product_name) LIKE @query
+                    OR lower(normalized_product_name) LIKE @query
+                    OR lower(active_substance_text) LIKE @query
+                    OR lower(marketing_authorization_holder) LIKE @query
+                    OR lower(authorization_number) LIKE @query
+                    OR lower(rpl_id) LIKE @query
+                    OR lower(chpl_url) LIKE @query
+                    OR lower(leaflet_url) LIKE @query
+                )
+                """;
+        }
+
+        sql += """
+            
             ORDER BY
                 CASE
-                    WHEN lower(product_name) = lower(@query) THEN 0
-                    WHEN lower(product_name) LIKE lower(@query) || '%' THEN 1
-                    ELSE 2
+                    WHEN lower(product_name) = @exactQuery THEN 0
+                    WHEN lower(product_name) LIKE @startsWithQuery THEN 1
+                    WHEN lower(normalized_product_name) LIKE @startsWithQuery THEN 2
+                    WHEN lower(active_substance_text) LIKE @startsWithQuery THEN 3
+                    ELSE 4
                 END,
                 product_name
             LIMIT @limit;
             """;
 
-        await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
         await using var command = connection.CreateCommand();
         command.CommandText = sql;
-        command.Parameters.AddWithValue("@query", trimmedQuery);
+
+        var trimmedQuery = query?.Trim().ToLowerInvariant() ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            command.Parameters.AddWithValue("@query", $"%{trimmedQuery}%");
+            command.Parameters.AddWithValue("@exactQuery", trimmedQuery);
+            command.Parameters.AddWithValue("@startsWithQuery", $"{trimmedQuery}%");
+        }
+        else
+        {
+            command.Parameters.AddWithValue("@exactQuery", string.Empty);
+            command.Parameters.AddWithValue("@startsWithQuery", string.Empty);
+        }
+
         command.Parameters.AddWithValue("@limit", limit);
 
         await using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
-            results.Add(Map(reader));
+            result.Add(new PolishDrugRegistryItem
+            {
+                Id = reader.GetInt64(reader.GetOrdinal("id")),
+                RplId = ReadNullableString(reader, "rpl_id"),
+
+                ProductName = ReadNullableString(reader, "product_name") ?? string.Empty,
+                NormalizedProductName = ReadNullableString(reader, "normalized_product_name") ?? string.Empty,
+
+                ActiveSubstanceText = ReadNullableString(reader, "active_substance_text"),
+                Strength = ReadNullableString(reader, "strength"),
+                PharmaceuticalForm = ReadNullableString(reader, "pharmaceutical_form"),
+                MarketingAuthorizationHolder = ReadNullableString(reader, "marketing_authorization_holder"),
+
+                AuthorizationNumber = ReadNullableString(reader, "authorization_number"),
+                AuthorizationValidity = ReadNullableString(reader, "authorization_validity"),
+                ProductType = ReadNullableString(reader, "product_type"),
+                ProcedureType = ReadNullableString(reader, "procedure_type"),
+
+                ChplUrl = ReadNullableString(reader, "chpl_url"),
+                LeafletUrl = ReadNullableString(reader, "leaflet_url"),
+
+                Source = ReadNullableString(reader, "source") ?? "RPL",
+                SourceVersion = ReadNullableString(reader, "source_version"),
+
+                ImportedAt = ReadNullableDateTime(reader, "imported_at")
+            });
         }
 
-        return results;
+        return result;
     }
 
-    public async Task<PolishDrugRegistryItem?> GetByIdAsync(long id)
+    private static string? ReadNullableString(System.Data.Common.DbDataReader reader, string columnName)
     {
-        const string sql = """
-            SELECT
-                id,
-                rpl_id,
-                product_name,
-                normalized_product_name,
-                active_substance_text,
-                strength,
-                pharmaceutical_form,
-                marketing_authorization_holder,
-                authorization_number,
-                authorization_validity,
-                product_type,
-                procedure_type,
-                chpl_url,
-                leaflet_url,
-                source,
-                source_version,
-                imported_at
-            FROM polish_drug_registry_items
-            WHERE id = @id;
-            """;
+        var ordinal = reader.GetOrdinal(columnName);
 
-        await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.AddWithValue("@id", id);
-
-        await using var reader = await command.ExecuteReaderAsync();
-
-        return await reader.ReadAsync()
-            ? Map(reader)
-            : null;
+        return reader.IsDBNull(ordinal)
+            ? null
+            : reader.GetString(ordinal);
     }
 
-    private static PolishDrugRegistryItem Map(SqliteDataReader reader)
+    private static DateTime ReadNullableDateTime(System.Data.Common.DbDataReader reader, string columnName)
     {
-        return new PolishDrugRegistryItem
-        {
-            Id = reader.GetInt64(reader.GetOrdinal("id")),
-            RplId = GetNullableString(reader, "rpl_id"),
-            ProductName = GetString(reader, "product_name"),
-            NormalizedProductName = GetString(reader, "normalized_product_name"),
-            ActiveSubstanceText = GetNullableString(reader, "active_substance_text"),
-            Strength = GetNullableString(reader, "strength"),
-            PharmaceuticalForm = GetNullableString(reader, "pharmaceutical_form"),
-            MarketingAuthorizationHolder = GetNullableString(reader, "marketing_authorization_holder"),
-            AuthorizationNumber = GetNullableString(reader, "authorization_number"),
-            AuthorizationValidity = GetNullableString(reader, "authorization_validity"),
-            ProductType = GetNullableString(reader, "product_type"),
-            ProcedureType = GetNullableString(reader, "procedure_type"),
-            ChplUrl = GetNullableString(reader, "chpl_url"),
-            LeafletUrl = GetNullableString(reader, "leaflet_url"),
-            Source = GetString(reader, "source"),
-            SourceVersion = GetNullableString(reader, "source_version"),
-            //ImportedAt = GetNullableDateTime(reader, "imported_at")
-        };
-    }
-
-    private static string GetString(SqliteDataReader reader, string column)
-    {
-        var ordinal = reader.GetOrdinal(column);
-        return reader.IsDBNull(ordinal) ? "" : reader.GetString(ordinal);
-    }
-
-    private static string? GetNullableString(SqliteDataReader reader, string column)
-    {
-        var ordinal = reader.GetOrdinal(column);
-        return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
-    }
-
-    private static DateTime? GetNullableDateTime(SqliteDataReader reader, string column)
-    {
-        var ordinal = reader.GetOrdinal(column);
+        var ordinal = reader.GetOrdinal(columnName);
 
         if (reader.IsDBNull(ordinal))
         {
-            return null;
+            return default;
         }
 
-        return DateTime.TryParse(reader.GetString(ordinal), out var value)
-            ? value
-            : null;
+        var value = reader.GetValue(ordinal);
+
+        if (value is DateTime dateTime)
+        {
+            return dateTime;
+        }
+
+        if (DateTime.TryParse(value.ToString(), out var parsed))
+        {
+            return parsed;
+        }
+
+        return default;
     }
 }

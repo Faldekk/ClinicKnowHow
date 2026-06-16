@@ -11,6 +11,7 @@ public partial class MainWindow : Window
         DataContext = viewModel;
     }
 
+
     private void OpenHistory_Click(object sender, RoutedEventArgs e)
     {
         var window = new Views.HistoryView
