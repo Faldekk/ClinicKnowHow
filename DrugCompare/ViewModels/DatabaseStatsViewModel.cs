@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using DrugCompare.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
+using DrugCompare.Application.Models;
 
 namespace DrugCompare.ViewModels;
 
-public sealed class DatabaseStatsViewModel : ObservableObject
+public sealed class DatabaseStatusViewModel : ObservableObject
 {
-    public DatabaseStatsViewModel(DatabaseStatusResult status)
+    public DatabaseStatusViewModel(DatabaseStatusResult status)
     {
         DrugsCount = status.DrugsCount;
         ActiveSubstancesCount = status.ActiveSubstancesCount;

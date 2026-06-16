@@ -1,4 +1,4 @@
-﻿using DrugCompare.ViewModels;
+using DrugCompare.ViewModels;
 using System.Windows;
 
 namespace DrugCompare;

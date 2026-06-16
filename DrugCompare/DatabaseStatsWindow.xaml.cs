@@ -1,11 +1,11 @@
-﻿using DrugCompare.ViewModels;
+using DrugCompare.ViewModels;
 using System.Windows;
 
 namespace DrugCompare;
 
-public partial class DatabaseStatsWindow : Window
+public partial class DatabaseStatusWindow : Window
 {
-    public DatabaseStatsWindow(DatabaseStatsViewModel viewModel)
+    public DatabaseStatusWindow(DatabaseStatusViewModel viewModel)
     {
         InitializeComponent();
         DataContext = viewModel;

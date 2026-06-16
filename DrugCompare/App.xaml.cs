@@ -1,23 +1,22 @@
-﻿using DrugCompare.Database;
-using DrugCompare.Repositories;
-using DrugCompare.Repositories.Contracts;
-using DrugCompare.Services;
-using DrugCompare.Services.Application;
-using DrugCompare.Services.Contracts;
-using DrugCompare.ViewModels;
-using DrugCompare.ViewModels.DrugExplorer;
-using DrugCompare.ViewModels.ICD;
 using DrugCompare.ViewModels.Interaction;
-using DrugCompare.ViewModels.PolishRegistry;
 using Microsoft.Extensions.Configuration;
+using DrugCompare.Infrastructure.SQLite;
+using DrugCompare.Infrastructure.Postgres;
+using DrugCompare.Features.InteractionChecker;
+using DrugCompare.Features.DrugExplorer;
+using DrugCompare.Features.PolishRegistry;
+using DrugCompare.Features.IcdLooker;
+using DrugCompare.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-
+using DrugCompare.Application.Services.Contracts;
+using DrugCompare.Application.Services.Implementations;
+using DrugCompare.Application.Repositories.Contracts;
 using System.IO;
 using System.Windows;
 
 namespace DrugCompare;
 
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     private ServiceProvider? _serviceProvider;
 
@@ -55,20 +54,17 @@ public partial class App : Application
         base.OnExit(e);
     }
 
-    private static void RegisterDatabase(
-        IConfiguration configuration,
-        IServiceCollection services)
+    private static void RegisterDatabase(IConfiguration configuration, IServiceCollection services)
     {
         var provider = configuration["Database:Provider"] ?? "SQLite";
 
-        if (string.Equals(provider, "SQLite", StringComparison.OrdinalIgnoreCase))
+        if (provider.Equals("SQLite", StringComparison.OrdinalIgnoreCase))
         {
             RegisterSqliteServices(services);
             return;
         }
 
-        throw new InvalidOperationException(
-            $"Unsupported database provider: {provider}. Current portable version supports SQLite.");
+        throw new InvalidOperationException($"Unsupported database provider: {provider}");
     }
 
     private static void RegisterSqliteServices(IServiceCollection services)
@@ -85,10 +81,12 @@ public partial class App : Application
         services.AddSingleton<IIcdCodeRepository, SqliteIcdCodeRepository>();
         services.AddSingleton<IAuditLogRepository, SqliteAuditLogRepository>();
 
-        services.AddSingleton<IDatabaseStatusService, SqliteDatabaseStatusService>();
+        services.AddSingleton<IDatabaseStatusRepository, SqliteDatabaseStatusRepository>();
+        services.AddSingleton<IDataManagementRepository, DisabledDataManagementRepository>();
+
+        services.AddSingleton<IDatabaseStatusService, DatabaseStatusService>();
         services.AddSingleton<IDataManagementService, DisabledDataManagementService>();
     }
-
     private static void RegisterApplicationServices(IServiceCollection services)
     {
         /*
@@ -125,9 +123,9 @@ public partial class App : Application
     private static void RegisterViewModels(IServiceCollection services)
     {
         services.AddSingleton<InteractionCheckerViewModel>();
-        services.AddSingleton<IcdLookerViewModel>();
         services.AddSingleton<DrugExplorerViewModel>();
-        services.AddSingleton<PolishDrugRegistryViewModel>();
+        services.AddSingleton<PolishRegistryViewModel>();
+        services.AddSingleton<IcdLookerViewModel>();
 
         services.AddSingleton<MainViewModel>();
     }

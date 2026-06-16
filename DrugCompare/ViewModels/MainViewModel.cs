@@ -1,13 +1,13 @@
-﻿
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DrugCompare.Models;
-using DrugCompare.Services.Contracts;
-using DrugCompare.ViewModels.DrugExplorer;
-
-using DrugCompare.ViewModels.ICD;
+using DrugCompare.Features.DrugExplorer;
+using DrugCompare.Features.IcdLooker;
+using DrugCompare.Features.InteractionChecker;
+using DrugCompare.Features.PolishRegistry;
+using DrugCompare.Application.Models;
+using DrugCompare.Application.Services.Contracts;
 using DrugCompare.ViewModels.Interaction;
-using DrugCompare.ViewModels.PolishRegistry;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 
@@ -33,7 +33,7 @@ public sealed class MainViewModel : ObservableObject
     InteractionCheckerViewModel interactionChecker,
     IcdLookerViewModel icdLooker,
     DrugExplorerViewModel drugExplorer,
-    PolishDrugRegistryViewModel polishDrugRegistry,
+    PolishRegistryViewModel polishDrugRegistry,
     IDatabaseStatusService databaseStatusService,
     IDataManagementService dataManagementService,
     IInteractionHistoryService interactionHistoryService,
@@ -64,7 +64,7 @@ public sealed class MainViewModel : ObservableObject
 
     public DrugExplorerViewModel DrugExplorer { get; }
 
-    public PolishDrugRegistryViewModel PolishDrugRegistry { get; }
+    public PolishRegistryViewModel PolishDrugRegistry { get; }
 
     // Shared / remaining state
 
@@ -156,7 +156,7 @@ public sealed class MainViewModel : ObservableObject
 
             StatusMessage = "Database status loaded.";
 
-            await SafeAuditAsync("DatabaseStatsViewed", new
+            await SafeAuditAsync("DatabaseStatusViewed", new
             {
                 status.DrugsCount,
                 status.ActiveSubstancesCount,
