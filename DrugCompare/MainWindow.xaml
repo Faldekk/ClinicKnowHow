@@ -6,112 +6,386 @@
         xmlns:icdLooker="clr-namespace:DrugCompare.Features.IcdLooker"
         Title="MedCompare"
         Height="850"
-        Width="1400">
+        Width="1400"
+        MinHeight="760"
+        MinWidth="1180"
+        WindowStartupLocation="CenterScreen">
 
-    <DockPanel Background="#F4F7FB">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PageBackgroundBrush" Color="#F4F7FB"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderBrushSoft" Color="#D7DEE8"/>
+        <SolidColorBrush x:Key="PrimaryTextBrush" Color="#111827"/>
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#6B7280"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#2563EB"/>
+        <SolidColorBrush x:Key="SoftAccentBrush" Color="#EEF2FF"/>
 
-        <!-- Top menu: auxiliary/admin tools only -->
-        <Menu DockPanel.Dock="Top"
-              Background="White"
-              FontSize="13">
+        <Style x:Key="NavigationItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="8,4"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
 
-            <MenuItem Header="_View">
-                <MenuItem Header="History"
-                          Click="OpenHistory_Click" />
-            </MenuItem>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}">
 
-            <MenuItem Header="_Data">
-                <MenuItem Header="Database Status"
-                          Click="OpenDatabaseStatus_Click" />
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"/>
+                        </Border>
 
-                <MenuItem Header="Data Management"
-                          Click="OpenDataManagement_Click" />
-            </MenuItem>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#F1F5F9"/>
+                                <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                            </Trigger>
 
-            <MenuItem Header="_Tools">
-                <MenuItem Header="Audit Log"
-                          Click="OpenAuditLog_Click" />
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{StaticResource SoftAccentBrush}"/>
+                                <Setter Property="BorderBrush" Value="#C7D2FE"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                <Separator />
+        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Margin" Value="8,4"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
 
-                <MenuItem Header="Settings"
-                          Click="OpenSettings_Click" />
-            </MenuItem>
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="42"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="5,4"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Resources>
 
-            <MenuItem Header="_Help">
-                <MenuItem Header="About"
-                          Click="OpenAbout_Click" />
-            </MenuItem>
-        </Menu>
+    <Grid Background="{StaticResource PageBackgroundBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="SidebarColumn" Width="260"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- App header -->
-        <Border DockPanel.Dock="Top"
-                Padding="14,8"
+        <!-- Lewy panel -->
+        <Border Grid.Column="0"
                 Background="White"
-                BorderBrush="#D5E0EE"
-                BorderThickness="0,0,0,1">
+                BorderBrush="{StaticResource BorderBrushSoft}"
+                BorderThickness="0,0,1,0">
 
-            <DockPanel LastChildFill="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="56"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel DockPanel.Dock="Left"
-                            Orientation="Vertical">
-                    <TextBlock Text="MedCompare"
-                               FontSize="20"
-                               FontWeight="SemiBold" />
+                <!-- Toggle + logo -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="56"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Prototyp aplikacji medycznej stworzonej w celach edukacyjnych"
-                               FontSize="12"
-                               Opacity="0.7"
-                               Margin="0,2,0,0" />
-                </StackPanel>
+                    <ToggleButton x:Name="SidebarToggle"
+                                  Grid.Column="0"
+                                  IsChecked="True"
+                                  Width="40"
+                                  Height="36"
+                                  Margin="8"
+                                  Content="☰"
+                                  FontSize="18"
+                                  FontWeight="Bold"
+                                  Cursor="Hand"
+                                  Checked="SidebarToggle_Checked"
+                                  Unchecked="SidebarToggle_Unchecked"/>
 
-                <Border DockPanel.Dock="Right"
-                        Padding="14,5"
-                        CornerRadius="12"
-                        Background="#EAF4FF"
-                        BorderBrush="#8EC5FF"
-                        BorderThickness="1"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Right">
+                    <StackPanel Grid.Column="1"
+                                VerticalAlignment="Center">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsChecked, ElementName=SidebarToggle}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
 
-                    <TextBlock Text="PROTYTPE MODE"
-                               FontSize="12"
-                               FontWeight="Bold"
-                               Foreground="#1E5D9F" />
+                        <TextBlock Text="MedCompare"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock Text="Tryb prototypu"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AccentBrush}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Opis panelu -->
+                <Border Grid.Row="1"
+                        Padding="14,4,14,8">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked, ElementName=SidebarToggle}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
+                    <StackPanel>
+                        <TextBlock Text="Wybierz narzędzie"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock Text="Moduły aplikacji"
+                                   FontSize="12"
+                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
                 </Border>
 
-            </DockPanel>
+                <!-- Nawigacja pełna -->
+                <ListBox x:Name="ModuleNavigation"
+                         Grid.Row="2"
+                         SelectedIndex="0"
+                         BorderThickness="0"
+                         Background="White"
+                         ItemContainerStyle="{StaticResource NavigationItemStyle}">
+                    <ListBox.Style>
+                        <Style TargetType="ListBox">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked, ElementName=SidebarToggle}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.Style>
+
+                    <ListBoxItem>
+                        <StackPanel>
+                            <TextBlock Text="Sprawdzanie interakcji"/>
+                            <TextBlock Text="Leki, substancje czynne, interakcje"
+                                       FontSize="11"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </ListBoxItem>
+
+                    <ListBoxItem>
+                        <StackPanel>
+                            <TextBlock Text="Polski Rejestr Leków"/>
+                            <TextBlock Text="RPL, ChPL, ulotki, pozwolenia"
+                                       FontSize="11"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </ListBoxItem>
+
+                    <ListBoxItem>
+                        <StackPanel>
+                            <TextBlock Text="Wyszukiwarka ICD-11"/>
+                            <TextBlock Text="Kody, działy, opisy ICD"
+                                       FontSize="11"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+
+                <!-- Nawigacja zwinięta -->
+                <StackPanel Grid.Row="2"
+                            VerticalAlignment="Top"
+                            Margin="0,6,0,0">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked, ElementName=SidebarToggle}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Button Content="⚕"
+                            ToolTip="Sprawdzanie interakcji"
+                            Tag="0"
+                            Click="SelectModule_Click"
+                            Style="{StaticResource IconButtonStyle}"/>
+
+                    <Button Content="R"
+                            ToolTip="Polski Rejestr Leków"
+                            Tag="1"
+                            Click="SelectModule_Click"
+                            Style="{StaticResource IconButtonStyle}"/>
+
+                    <Button Content="ICD"
+                            ToolTip="Wyszukiwarka ICD-11"
+                            Tag="2"
+                            Click="SelectModule_Click"
+                            FontSize="12"
+                            Style="{StaticResource IconButtonStyle}"/>
+                </StackPanel>
+
+                <!-- Narzędzia dolne -->
+                <StackPanel Grid.Row="3"
+                            Margin="0,0,0,10">
+
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked, ElementName=SidebarToggle}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Separator Margin="12,6"/>
+
+                    <Button Content="Historia"
+                            Click="OpenHistory_Click"
+                            Style="{StaticResource SidebarButtonStyle}"/>
+
+                    <Button Content="Status bazy danych"
+                            Click="OpenDatabaseStatus_Click"
+                            Style="{StaticResource SidebarButtonStyle}"/>
+
+                    <Button Content="Zarządzanie danymi"
+                            Click="OpenDataManagement_Click"
+                            Style="{StaticResource SidebarButtonStyle}"/>
+
+                    <Button Content="Dziennik audytu"
+                            Click="OpenAuditLog_Click"
+                            Style="{StaticResource SidebarButtonStyle}"/>
+
+                    <Button Content="Ustawienia"
+                            Click="OpenSettings_Click"
+                            Style="{StaticResource SidebarButtonStyle}"/>
+
+                    <Button Content="O aplikacji"
+                            Click="OpenAbout_Click"
+                            Style="{StaticResource SidebarButtonStyle}"/>
+                </StackPanel>
+
+                <!-- Narzędzia zwinięte -->
+                <StackPanel Grid.Row="3"
+                            Margin="0,0,0,10">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked, ElementName=SidebarToggle}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Button Content="H"
+                            ToolTip="Historia"
+                            Click="OpenHistory_Click"
+                            Style="{StaticResource IconButtonStyle}"/>
+
+                    <Button Content="DB"
+                            ToolTip="Status bazy danych"
+                            Click="OpenDatabaseStatus_Click"
+                            FontSize="12"
+                            Style="{StaticResource IconButtonStyle}"/>
+
+                    <Button Content="A"
+                            ToolTip="Dziennik audytu"
+                            Click="OpenAuditLog_Click"
+                            Style="{StaticResource IconButtonStyle}"/>
+
+                    <Button Content="?"
+                            ToolTip="O aplikacji"
+                            Click="OpenAbout_Click"
+                            Style="{StaticResource IconButtonStyle}"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- Main modules -->
-        <TabControl Margin="0"
-                    BorderThickness="0"
-                    Background="Transparent">
+        <!-- Główna zawartość -->
+        <Grid Grid.Column="1"
+              Background="{StaticResource PageBackgroundBrush}">
 
-            <TabControl.Resources>
-                <Style TargetType="TabItem">
-                    <Setter Property="Padding"
-                            Value="18,8" />
-                    <Setter Property="FontSize"
-                            Value="14" />
-                    <Setter Property="FontWeight"
-                            Value="SemiBold" />
-                </Style>
-            </TabControl.Resources>
+            <interaction:InteractionCheckerView DataContext="{Binding InteractionChecker}">
+                <interaction:InteractionCheckerView.Style>
+                    <Style TargetType="interaction:InteractionCheckerView">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=ModuleNavigation}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </interaction:InteractionCheckerView.Style>
+            </interaction:InteractionCheckerView>
 
-            <TabItem Header="Interaction Checker" Margin="-2,-2,-2,-2">
-                <interaction:InteractionCheckerView DataContext="{Binding InteractionChecker}" Height="687" />
-            </TabItem>
+            <polishRegistry:PolishRegistryView DataContext="{Binding PolishDrugRegistry}">
+                <polishRegistry:PolishRegistryView.Style>
+                    <Style TargetType="polishRegistry:PolishRegistryView">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=ModuleNavigation}" Value="1">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </polishRegistry:PolishRegistryView.Style>
+            </polishRegistry:PolishRegistryView>
 
-            <TabItem Header="Polish Drug Registry" Margin="-2,-2,-2,-2">
-                <polishRegistry:PolishRegistryView DataContext="{Binding PolishDrugRegistry}" />
-            </TabItem>
+            <icdLooker:IcdLookerView DataContext="{Binding IcdLooker}">
+                <icdLooker:IcdLookerView.Style>
+                    <Style TargetType="icdLooker:IcdLookerView">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=ModuleNavigation}" Value="2">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </icdLooker:IcdLookerView.Style>
+            </icdLooker:IcdLookerView>
 
-            <TabItem Header="ICD Looker" Margin="-2,-2,-2,-1">
-                <icdLooker:IcdLookerView DataContext="{Binding IcdLooker}" Height="749" />
-            </TabItem>
-
-        </TabControl>
-
-    </DockPanel>
+        </Grid>
+    </Grid>
 </Window>

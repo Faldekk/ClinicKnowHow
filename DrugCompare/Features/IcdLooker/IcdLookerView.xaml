@@ -77,9 +77,9 @@
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="162*"/>
-            <RowDefinition Height="79*"/>
-            <RowDefinition Height="Auto" MinHeight="153.439"/>
+            <RowDefinition Height="88*"/>
+            <RowDefinition Height="37*"/>
+            <RowDefinition Height="Auto" MinHeight="0"/>
         </Grid.RowDefinitions>
 
         <!-- Wyszukiwanie -->

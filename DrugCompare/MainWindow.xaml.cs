@@ -10,7 +10,34 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
     }
+    private void SelectModule_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button)
+        {
+            return;
+        }
 
+        if (button.Tag is null)
+        {
+            return;
+        }
+
+        if (int.TryParse(button.Tag.ToString(), out var selectedIndex))
+        {
+            ModuleNavigation.SelectedIndex = selectedIndex;
+        }
+    }
+    private void SidebarToggle_Checked(object sender, RoutedEventArgs e)
+    {
+        SidebarColumn.Width = new GridLength(260);
+    }
+
+    private void SidebarToggle_Unchecked(object sender, RoutedEventArgs e)
+    {
+        SidebarColumn.Width = new GridLength(56);
+    }
+
+    
 
     private void OpenHistory_Click(object sender, RoutedEventArgs e)
     {

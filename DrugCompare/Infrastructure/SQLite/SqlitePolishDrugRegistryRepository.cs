@@ -47,14 +47,14 @@ public sealed class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepo
             sql += """
                 
                 AND (
-                    lower(product_name) LIKE @query
-                    OR lower(normalized_product_name) LIKE @query
-                    OR lower(active_substance_text) LIKE @query
-                    OR lower(marketing_authorization_holder) LIKE @query
-                    OR lower(authorization_number) LIKE @query
-                    OR lower(rpl_id) LIKE @query
-                    OR lower(chpl_url) LIKE @query
-                    OR lower(leaflet_url) LIKE @query
+                    product_name LIKE @query COLLATE NOCASE
+                    OR normalized_product_name LIKE @query COLLATE NOCASE
+                    OR active_substance_text LIKE @query COLLATE NOCASE
+                    OR marketing_authorization_holder LIKE @query COLLATE NOCASE
+                    OR authorization_number LIKE @query COLLATE NOCASE
+                    OR rpl_id LIKE @query COLLATE NOCASE
+                    OR strength LIKE @query COLLATE NOCASE
+                    OR pharmaceutical_form LIKE @query COLLATE NOCASE
                 )
                 """;
         }
@@ -63,10 +63,10 @@ public sealed class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepo
             
             ORDER BY
                 CASE
-                    WHEN lower(product_name) = @exactQuery THEN 0
-                    WHEN lower(product_name) LIKE @startsWithQuery THEN 1
-                    WHEN lower(normalized_product_name) LIKE @startsWithQuery THEN 2
-                    WHEN lower(active_substance_text) LIKE @startsWithQuery THEN 3
+                    WHEN product_name = @exactQuery COLLATE NOCASE THEN 0
+                    WHEN product_name LIKE @startsWithQuery COLLATE NOCASE THEN 1
+                    WHEN normalized_product_name LIKE @startsWithQuery COLLATE NOCASE THEN 2
+                    WHEN active_substance_text LIKE @startsWithQuery COLLATE NOCASE THEN 3
                     ELSE 4
                 END,
                 product_name
@@ -76,20 +76,11 @@ public sealed class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepo
         await using var command = connection.CreateCommand();
         command.CommandText = sql;
 
-        var trimmedQuery = query?.Trim().ToLowerInvariant() ?? string.Empty;
+        var trimmedQuery = query?.Trim() ?? string.Empty;
 
-        if (!string.IsNullOrWhiteSpace(query))
-        {
-            command.Parameters.AddWithValue("@query", $"%{trimmedQuery}%");
-            command.Parameters.AddWithValue("@exactQuery", trimmedQuery);
-            command.Parameters.AddWithValue("@startsWithQuery", $"{trimmedQuery}%");
-        }
-        else
-        {
-            command.Parameters.AddWithValue("@exactQuery", string.Empty);
-            command.Parameters.AddWithValue("@startsWithQuery", string.Empty);
-        }
-
+        command.Parameters.AddWithValue("@query", $"%{trimmedQuery}%");
+        command.Parameters.AddWithValue("@exactQuery", trimmedQuery);
+        command.Parameters.AddWithValue("@startsWithQuery", $"{trimmedQuery}%");
         command.Parameters.AddWithValue("@limit", limit);
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -145,18 +136,15 @@ public sealed class SqlitePolishDrugRegistryRepository : IPolishDrugRegistryRepo
             return default;
         }
 
-        var value = reader.GetValue(ordinal);
+        var rawValue = reader.GetValue(ordinal);
 
-        if (value is DateTime dateTime)
+        if (rawValue is DateTime dateTime)
         {
             return dateTime;
         }
 
-        if (DateTime.TryParse(value.ToString(), out var parsed))
-        {
-            return parsed;
-        }
-
-        return default;
+        return DateTime.TryParse(rawValue.ToString(), out var parsed)
+            ? parsed
+            : default;
     }
 }

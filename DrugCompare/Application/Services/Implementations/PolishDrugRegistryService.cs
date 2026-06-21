@@ -13,7 +13,7 @@ public sealed class PolishDrugRegistryService : IPolishDrugRegistryService
         _repository = repository;
     }
 
-    public Task<List<PolishDrugRegistryItem>> SearchAsync(string query, int limit = 50)
+    public Task<List<PolishDrugRegistryItem>> SearchAsync(string query, int limit = 100)
     {
         return _repository.SearchAsync(query, limit);
     }
