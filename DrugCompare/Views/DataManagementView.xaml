@@ -3,131 +3,148 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Border Background="White"
-            CornerRadius="12"
-            Padding="14"
-            BorderBrush="#D6DEE8"
-            BorderThickness="1"
-            Margin="0,12,0,0">
+        CornerRadius="12"
+        Padding="18"
+        Margin="0,12,0,0"
+        BorderBrush="#E5E7EB"
+        BorderThickness="1">
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <StackPanel>
 
-            <Grid Grid.Row="0"
-                  Margin="0,0,0,16">
+            <TextBlock Text="Źródła danych"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="#111827"
+                   Margin="0,0,0,6"/>
+
+            <TextBlock Text="ClinicDaddy korzysta wyłącznie z lokalnie zapisanych i zweryfikowanych źródeł. Moduł RAG ma opisywać relacje medyczne tylko na podstawie tych danych."
+                   FontSize="13"
+                   Foreground="#6B7280"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16"/>
+
+            <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel>
-                    <TextBlock Text="Data Management"
-                               FontSize="18"
-                               FontWeight="Bold"/>
-
-                    <TextBlock Text="Imported dataset versions and source tracking."
-                               FontSize="12"
-                               Foreground="#607080"
-                               Margin="0,3,0,0"/>
-                </StackPanel>
-
-                <Button Grid.Column="1"
-                        Content="Reload data status"
-                        Command="{Binding LoadDataManagementCommand}"
-                        Width="160"
-                        Height="34"/>
-            </Grid>
-
-            <Grid Grid.Row="1"
-                  Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="190"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0"
-                        Background="#F8FAFC"
-                        BorderBrush="#D6DEE8"
-                        BorderThickness="1"
-                        CornerRadius="10"
-                        Padding="14"
-                        Margin="0,0,8,0">
-                    <StackPanel>
-                        <TextBlock Text="EMA Import"
-                                   FontSize="15"
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,8"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                        <TextBlock Text="{Binding EmaImportSummary}"
-                                   FontSize="12"
-                                   TextWrapping="Wrap"
-                                   Foreground="#1B2A38"/>
-                    </StackPanel>
-                </Border>
+                <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Text="RPL / URPL"
+                       FontWeight="SemiBold"
+                       Foreground="#111827"
+                       Margin="0,0,12,14"/>
 
-                <Border Grid.Column="1"
-                        Background="#FFF7E6"
-                        BorderBrush="#F2C879"
-                        BorderThickness="1"
-                        CornerRadius="10"
-                        Padding="14"
-                        Margin="8,0,0,0">
-                    <StackPanel>
-                        <TextBlock Text="DDInter Import"
-                                   FontSize="15"
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,8"/>
+                <TextBlock Grid.Row="0"
+                       Grid.Column="1"
+                       TextWrapping="Wrap"
+                       Foreground="#374151"
+                       Margin="0,0,0,14"
+                       LineHeight="20">
+                <Run Text="Polski Rejestr Produktów Leczniczych: produkty, substancje czynne, postacie, moce, podmioty odpowiedzialne, linki do ChPL i ulotek."/>
+                <LineBreak/>
+                <Run Text="Źródło: Rejestr Produktów Leczniczych / URPL."/>
+                </TextBlock>
 
-                        <TextBlock Text="{Binding DdinterImportSummary}"
-                                   FontSize="12"
-                                   TextWrapping="Wrap"
-                                   Foreground="#1B2A38"/>
-                    </StackPanel>
-                </Border>
+                <TextBlock Grid.Row="1"
+                       Grid.Column="0"
+                       Text="ChPL"
+                       FontWeight="SemiBold"
+                       Foreground="#111827"
+                       Margin="0,0,12,14"/>
+
+                <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       TextWrapping="Wrap"
+                       Foreground="#374151"
+                       Margin="0,0,0,14"
+                       LineHeight="20">
+                <Run Text="Charakterystyka Produktu Leczniczego: sekcje 4.1–6.1, w tym wskazania, dawkowanie, przeciwwskazania, ostrzeżenia, interakcje, działania niepożądane i substancje pomocnicze."/>
+                <LineBreak/>
+                <Run Text="Źródło: dokumenty ChPL dostępne z poziomu RPL / URPL."/>
+                </TextBlock>
+
+                <TextBlock Grid.Row="2"
+                       Grid.Column="0"
+                       Text="ICD"
+                       FontWeight="SemiBold"
+                       Foreground="#111827"
+                       Margin="0,0,12,14"/>
+
+                <TextBlock Grid.Row="2"
+                       Grid.Column="1"
+                       TextWrapping="Wrap"
+                       Foreground="#374151"
+                       Margin="0,0,0,14"
+                       LineHeight="20">
+                <Run Text="Lokalna baza kodów rozpoznań używana do szybkiego wyszukiwania jednostek chorobowych i kodów diagnostycznych."/>
+                <LineBreak/>
+                <Run Text="Źródło: https://rsk3.ezdrowie.gov.pl/resource/structure/icd11/99ICD1/2023-01/mms/details"/>
+                </TextBlock>
+
+                <TextBlock Grid.Row="3"
+                       Grid.Column="0"
+                       Text="Źródła naukowe"
+                       FontWeight="SemiBold"
+                       Foreground="#111827"
+                       Margin="0,0,12,14"/>
+
+                <TextBlock Grid.Row="3"
+                       Grid.Column="1"
+                       TextWrapping="Wrap"
+                       Foreground="#374151"
+                       Margin="0,0,0,14"
+                       LineHeight="20">
+                <Run Text="Planowane, ręcznie dodawane i weryfikowane publikacje naukowe, wytyczne lub inne materiały medyczne zapisane w lokalnej bazie jako źródła dla RAG."/>
+                <LineBreak/>
+                <Run Text="Źródło: tylko materiały ręcznie dodane, opisane i zweryfikowane w lokalnej bazie."/>
+                </TextBlock>
+
+                <TextBlock Grid.Row="4"
+                       Grid.Column="0"
+                       Text="Lokalne reguły"
+                       FontWeight="SemiBold"
+                       Foreground="#111827"
+                       Margin="0,0,12,0"/>
+
+                <TextBlock Grid.Row="4"
+                       Grid.Column="1"
+                       TextWrapping="Wrap"
+                       Foreground="#374151"
+                       LineHeight="20">
+                <Run Text="Ręcznie zatwierdzone reguły, notatki i opisy relacji między substancjami. Tylko takie dane mogą być używane jako podstawa opisów w module InteractionSafetyChecker."/>
+                <LineBreak/>
+                <Run Text="Źródło: lokalna baza ClinicDaddy, rekordy ze statusem reviewed / verified."/>
+                </TextBlock>
             </Grid>
 
-            <TextBlock Grid.Row="2"
-                       Text="Recent imports"
-                       FontSize="15"
-                       FontWeight="Bold"
-                       Margin="0,0,0,8"/>
+            <Border Background="#EFF6FF"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,16,0,0"
+                BorderBrush="#BFDBFE"
+                BorderThickness="1">
 
-            <DataGrid Grid.Row="3"
-                      ItemsSource="{Binding RecentDataImports}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      FontSize="12">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Source"
-                                        Binding="{Binding SourceName}"
-                                        Width="100"/>
+                <TextBlock TextWrapping="Wrap"
+                       Foreground="#1E3A8A"
+                       FontSize="13"
+                       LineHeight="20">
+                <Run Text="Zasada źródeł: "/>
+                <Run Text="każdy opis medyczny powinien wskazywać, z jakiego źródła pochodzi informacja. "/>
+                <Run Text="Jeżeli w lokalnej bazie nie ma zweryfikowanego źródła, system powinien poinformować o braku danych, a nie tworzyć odpowiedź z pamięci modelu."/>
+                </TextBlock>
 
-                    <DataGridTextColumn Header="File"
-                                        Binding="{Binding FileName}"
-                                        Width="260"/>
+            </Border>
 
-                    <DataGridTextColumn Header="Imported At"
-                                        Binding="{Binding ImportedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                        Width="150"/>
-
-                    <DataGridTextColumn Header="Records"
-                                        Binding="{Binding RecordsImported, StringFormat=N0}"
-                                        Width="110"/>
-
-                    <DataGridTextColumn Header="Status"
-                                        Binding="{Binding ImportStatus}"
-                                        Width="120"/>
-
-                    <DataGridTextColumn Header="Notes"
-                                        Binding="{Binding Notes}"
-                                        Width="350"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Grid>
+        </StackPanel>
     </Border>
 </UserControl>

@@ -2,51 +2,185 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Border Background="White"
-            CornerRadius="12"
-            Padding="14"
-            BorderBrush="#D6DEE8"
-            BorderThickness="1"
-            Margin="0,12,0,0">
-        <StackPanel>
-            <TextBlock Text="Settings"
-                       FontSize="18"
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  Background="#F3F4F6">
+
+        <StackPanel Margin="24">
+
+            <TextBlock Text="Ustawienia"
+                       FontSize="26"
                        FontWeight="Bold"
-                       Margin="0,0,0,8"/>
-
-            <TextBlock Text="Current prototype settings are stored locally in appsettings.json."
-                       FontSize="12"
-                       Foreground="#607080"
-                       Margin="0,0,0,16"/>
-
-            <TextBlock Text="Configuration"
-                       FontSize="14"
-                       FontWeight="Bold"
-                       Margin="0,0,0,6"/>
-
-            <TextBlock Text="Database: PostgreSQL"
-                       FontSize="12"
+                       Foreground="#111827"
                        Margin="0,0,0,4"/>
 
-            <TextBlock Text="Mode: Local only"
-                       FontSize="12"
-                       Margin="0,0,0,4"/>
-
-            <TextBlock Text="Cloud services: Disabled"
-                       FontSize="12"
-                       Margin="0,0,0,16"/>
-
-            <Separator Margin="0,0,0,16"/>
-
-            <TextBlock Text="Medical safety note"
+            <TextBlock Text="Zasady działania ClinicDaddy."
                        FontSize="14"
-                       FontWeight="Bold"
-                       Margin="0,0,0,6"/>
+                       Foreground="#6B7280"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,18"/>
 
-            <TextBlock Text="This application is an educational clinical decision-support prototype. It does not replace physician or pharmacist judgment. Missing interaction data does not mean that a drug combination is safe."
-                       FontSize="12"
-                       Foreground="#8A5A00"
-                       TextWrapping="Wrap"/>
+            <Border Background="White"
+                    CornerRadius="12"
+                    Padding="18"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Tryb aplikacji"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#111827"
+                               Margin="0,0,0,12"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="0"
+                                   Text="Nazwa aplikacji"
+                                   Foreground="#6B7280"
+                                   Margin="0,0,12,10"/>
+
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="1"
+                                   Text="ClinicDaddy"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111827"
+                                   Margin="0,0,0,10"/>
+
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="0"
+                                   Text="Tryb danych"
+                                   Foreground="#6B7280"
+                                   Margin="0,0,12,10"/>
+
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="1"
+                                   Text="Local-first / SQLite"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111827"
+                                   Margin="0,0,0,10"/>
+
+                        <TextBlock Grid.Row="2"
+                                   Grid.Column="0"
+                                   Text="Rola systemu"
+                                   Foreground="#6B7280"
+                                   Margin="0,0,12,0"/>
+
+                        <TextBlock Grid.Row="2"
+                                   Grid.Column="1"
+                                   Text="Clinical Decision Support System — informacyjne wsparcie lekarza"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111827"
+                                   TextWrapping="Wrap"/>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+
+            <Border Background="White"
+                    CornerRadius="12"
+                    Padding="18"
+                    Margin="0,12,0,0"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Zasady bezpieczeństwa"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#111827"
+                               Margin="0,0,0,6"/>
+
+                    <TextBlock Text="Te zasady są stałe i nie powinny być wyłączane przez użytkownika."
+                               FontSize="13"
+                               Foreground="#6B7280"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,16"/>
+
+                    <CheckBox Content="System nie podejmuje autonomicznych decyzji klinicznych"
+                              IsChecked="True"
+                              IsEnabled="False"
+                              Margin="0,0,0,8"/>
+
+                    <CheckBox Content="Brak danych w bazie nie oznacza bezpieczeństwa"
+                              IsChecked="True"
+                              IsEnabled="False"
+                              Margin="0,0,0,8"/>
+
+                    <CheckBox Content="Opisy medyczne powinny być oparte na lokalnych źródłach"
+                              IsChecked="True"
+                              IsEnabled="False"
+                              Margin="0,0,0,8"/>
+
+                    <CheckBox Content="Lekarz interpretuje wynik w kontekście pacjenta"
+                              IsChecked="True"
+                              IsEnabled="False"
+                              Margin="0,0,0,14"/>
+
+                    <Border Background="#F9FAFB"
+                            CornerRadius="8"
+                            Padding="12"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1">
+
+                        <TextBlock TextWrapping="Wrap"
+                                   Foreground="#374151"
+                                   FontSize="13"
+                                   LineHeight="20">
+                            <Run Text="ClinicDaddy wspiera lekarza przez szybszy dostęp do uporządkowanych informacji medycznych. "/>
+                            <Run Text="System nie zastępuje wiedzy, doświadczenia, aktualnych wytycznych ani decyzji klinicznej lekarza."/>
+                        </TextBlock>
+
+                    </Border>
+
+                </StackPanel>
+            </Border>
+
+            <Border Background="White"
+                    CornerRadius="12"
+                    Padding="18"
+                    Margin="0,12,0,0"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Planowane funkcje"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#111827"
+                               Margin="0,0,0,12"/>
+
+                    <TextBlock Text="• RAG oparty wyłącznie na lokalnej bazie źródeł"
+                               Foreground="#374151"
+                               Margin="0,0,0,6"/>
+
+                    <TextBlock Text="• Nawigator sekcji ChPL"
+                               Foreground="#374151"
+                               Margin="0,0,0,6"/>
+
+                    <TextBlock Text="• Baza zweryfikowanych relacji między substancjami"
+                               Foreground="#374151"
+                               Margin="0,0,0,6"/>
+
+                    <TextBlock Text="• Źródłowe opisy możliwego postępowania"
+                               Foreground="#374151"/>
+
+                </StackPanel>
+            </Border>
+
         </StackPanel>
-    </Border>
+    </ScrollViewer>
 </UserControl>
