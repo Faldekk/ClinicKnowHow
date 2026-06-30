@@ -1,4 +1,4 @@
-````markdown
+
 # MedCompare
 
 **MedCompare** is a local desktop application for checking drug-related information, active substances, known substance interactions, Polish drug registry data, and ICD codes.
